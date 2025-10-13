@@ -16,22 +16,32 @@ namespace SGMCJ.Persistence.Repositories.Medical
             _context = context;
         }
 
-        public async Task<List<Medico>> GetByEspecialidadAsync(string especialidad)
+        public Task<bool> ExisteMedicoAsync(string cedula)
         {
-            if (!Enum.TryParse<Especialidad>(especialidad, true, out var especialidadEnum))
-            {
-                return new List<Medico>();
-            }
-
-            return await _context.Medicos
-                .Where(m => m.Especialidad == especialidadEnum && m.EsActivo)
-                .ToListAsync();
+            throw new NotImplementedException();
         }
 
-        public async Task<bool> ExisteMedicoAsync(string cedula)
+        public Task<List<Medico>> GetByEspecialidadAsync(string especialidad)
         {
-            return await _context.Medicos
-                .AnyAsync(m => m.Cedula == cedula);
+            throw new NotImplementedException();
         }
+
+        //public async Task<List<Medico>> GetByEspecialidadAsync(string especialidad)
+        //{
+        //    if (!Enum.TryParse<Especialidad>(especialidad, true, out var especialidadEnum))
+        //    {
+        //        return new List<Medico>();
+        //    }
+
+        //    return await _context.Medicos
+        //        .Where(m => m.Especialidad == especialidadEnum && m.EsActivo)
+        //        .ToListAsync();
+        //}
+
+        //public async Task<bool> ExisteMedicoAsync(string cedula)
+        //{
+        //    return await _context.Medicos
+        //        .AnyAsync(m => m.Cedula == cedula);
+        //}
     }
 }

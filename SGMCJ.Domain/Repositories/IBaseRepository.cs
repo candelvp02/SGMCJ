@@ -3,7 +3,7 @@ using System.Linq.Expressions;
 
 namespace SGMCJ.Domain.Repositories
 {
-    public interface IBaseRepository<T> where T : AuditEntity
+    public interface IBaseRepository<T> where T : class
     {
         Task<IEnumerable<T>> GetAllAsync();
         Task<T> GetByIdAsync(int id);
@@ -11,6 +11,6 @@ namespace SGMCJ.Domain.Repositories
         Task UpdateAsync(T entity);
         Task<bool> DeleteAsync(int id);
         Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate);
-        Task<bool> ExistsAsync(int id);
+        Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate);
     }
 }

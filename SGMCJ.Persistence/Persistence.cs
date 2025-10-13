@@ -32,7 +32,7 @@ namespace SGMCJ.Persistence
             services.AddScoped<IMedicoAdoRepository, MedicoAdoRepository>();
             services.AddScoped<IPacienteAdoRepository, PacienteAdoRepository>();
             services.AddScoped<ICitaAdoRepository, CitaAdoRepository>();
-
+            
             return services;
         }
     }

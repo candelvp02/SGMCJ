@@ -1,6 +1,8 @@
 using SGMCJ.Application.Interfaces.Service;
 using SGMCJ.Application.Services;
+using SGMCJ.Domain.Repositories.Medical;
 using SGMCJ.Persistence;
+using SGMCJ.Persistence.Repositories.Medical;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,16 +11,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddPersistenceServices(builder.Configuration);
-
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAll", policy =>
-    {
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
-    });
-});
+builder.Services.AddScoped<IAppoinmentRepository, AppoinmentRepository>();
+builder.Services.AddTransient<ICitaService, CitaService>();
 
 var app = builder.Build();
 
