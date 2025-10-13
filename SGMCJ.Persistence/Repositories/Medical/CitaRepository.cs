@@ -18,74 +18,109 @@ namespace SGMCJ.Persistence.Repositories.Medical
             _context = context;
         }
 
-        public async Task<List<Cita>> GetByPacienteIdAsync(int pacienteId)
+        public Task<bool> ExisteCitaEnHorarioAsync(int medicoId, DateTime fechaHora)
         {
-            return await _context.Citas
-                .Include(c => c.Paciente)
-                .Include(c => c.Medico)
-                .Where(c => c.PacienteId == pacienteId && !c.EstaEliminado)
-                .OrderByDescending(c => c.FechaHora)
-                .ToListAsync();
+            throw new NotImplementedException();
         }
 
-        public async Task<List<Cita>> GetByMedicoIdAsync(int medicoId)
+        public Task<List<Cita>> GetByEstadoAsync(string estado)
         {
-            return await _context.Citas
-                .Include(c => c.Paciente)
-                .Include(c => c.Medico)
-                .Where(c => c.MedicoId == medicoId && !c.EstaEliminado)
-                .OrderBy(c => c.FechaHora)
-                .ToListAsync();
+            throw new NotImplementedException();
         }
 
-        public async Task<List<Cita>> GetByFechaAsync(DateTime fecha)
+        public Task<List<Cita>> GetByFechaAsync(DateTime fecha)
         {
-            var fechaInicio = fecha.Date;
-            var fechaFin = fechaInicio.AddDays(1);
-
-            return await _context.Citas
-                .Include(c => c.Paciente)
-                .Include(c => c.Medico)
-                .Where(c => c.FechaHora >= fechaInicio && c.FechaHora < fechaFin && !c.EstaEliminado)
-                .OrderBy(c => c.FechaHora)
-                .ToListAsync();
+            throw new NotImplementedException();
         }
 
-        public async Task<List<Cita>> GetByEstadoAsync(string estado)
+        public Task<List<Cita>> GetByMedicoIdAsync(int medicoId)
         {
-            return await _context.Citas
-                .Include(c => c.Paciente)
-                .Include(c => c.Medico)
-                .Where(c => c.Estado.ToString() == estado && !c.EstaEliminado)
-                .OrderBy(c => c.FechaHora)
-                .ToListAsync();
+            throw new NotImplementedException();
         }
 
-        public async Task<bool> ExisteCitaEnHorarioAsync(int medicoId, DateTime fechaHora)
+        public Task<List<Cita>> GetByPacienteIdAsync(int pacienteId)
         {
-            return await _context.Citas
-                .AnyAsync(c => c.MedicoId == medicoId &&
-                          c.FechaHora == fechaHora &&
-                          c.Estado != EstadoCita.Cancelada &&
-                          !c.EstaEliminado);
+            throw new NotImplementedException();
         }
 
-        public async Task<List<Cita>> GetCitasProximasAsync(DateTime desde, DateTime hasta)
+        public Task<List<Cita>> GetCitasByPacienteAsync(int pacienteId)
         {
-            return await _context.Citas
-                .Include(c => c.Paciente)
-                .Include(c => c.Medico)
-                .Where(c => c.FechaHora >= desde &&
-                           c.FechaHora <= hasta &&
-                           c.Estado == EstadoCita.Programada &&
-                           !c.EstaEliminado)
-                .OrderBy(c => c.FechaHora)
-                .ToListAsync();
+            throw new NotImplementedException();
         }
 
-        public async Task<List<Cita>> GetCitasByPacienteAsync(int pacienteId)
+        public Task<List<Cita>> GetCitasProximasAsync(DateTime desde, DateTime hasta)
         {
-            return await GetByPacienteIdAsync(pacienteId);
+            throw new NotImplementedException();
         }
+
+        //public async Task<List<Cita>> GetByPacienteIdAsync(int pacienteId)
+        //{
+        //    return await _context.Citas
+        //        .Include(c => c.Paciente)
+        //        .Include(c => c.Medico)
+        //        .Where(c => c.PacienteId == pacienteId && !c.EstaEliminado)
+        //        .OrderByDescending(c => c.FechaHora)
+        //        .ToListAsync();
+        //}
+
+        //public async Task<List<Cita>> GetByMedicoIdAsync(int medicoId)
+        //{
+        //    return await _context.Citas
+        //        .Include(c => c.Paciente)
+        //        .Include(c => c.Medico)
+        //        .Where(c => c.MedicoId == medicoId && !c.EstaEliminado)
+        //        .OrderBy(c => c.FechaHora)
+        //        .ToListAsync();
+        //}
+
+        //public async Task<List<Cita>> GetByFechaAsync(DateTime fecha)
+        //{
+        //    var fechaInicio = fecha.Date;
+        //    var fechaFin = fechaInicio.AddDays(1);
+
+        //    return await _context.Citas
+        //        .Include(c => c.Paciente)
+        //        .Include(c => c.Medico)
+        //        .Where(c => c.FechaHora >= fechaInicio && c.FechaHora < fechaFin && !c.EstaEliminado)
+        //        .OrderBy(c => c.FechaHora)
+        //        .ToListAsync();
+        //}
+
+        //public async Task<List<Cita>> GetByEstadoAsync(string estado)
+        //{
+        //    return await _context.Citas
+        //        .Include(c => c.Paciente)
+        //        .Include(c => c.Medico)
+        //        .Where(c => c.Estado.ToString() == estado && !c.EstaEliminado)
+        //        .OrderBy(c => c.FechaHora)
+        //        .ToListAsync();
+        //}
+
+        //public async Task<bool> ExisteCitaEnHorarioAsync(int medicoId, DateTime fechaHora)
+        //{
+        //    return await _context.Citas
+        //        .AnyAsync(c => c.MedicoId == medicoId &&
+        //                  c.FechaHora == fechaHora &&
+        //                  c.Estado != EstadoCita.Cancelada &&
+        //                  !c.EstaEliminado);
+        //}
+
+        //public async Task<List<Cita>> GetCitasProximasAsync(DateTime desde, DateTime hasta)
+        //{
+        //    return await _context.Citas
+        //        .Include(c => c.Paciente)
+        //        .Include(c => c.Medico)
+        //        .Where(c => c.FechaHora >= desde &&
+        //                   c.FechaHora <= hasta &&
+        //                   c.Estado == EstadoCita.Programada &&
+        //                   !c.EstaEliminado)
+        //        .OrderBy(c => c.FechaHora)
+        //        .ToListAsync();
+        //}
+
+        //public async Task<List<Cita>> GetCitasByPacienteAsync(int pacienteId)
+        //{
+        //    return await GetByPacienteIdAsync(pacienteId);
+        //}
     }
 }

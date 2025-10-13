@@ -15,59 +15,99 @@ namespace SGMCJ.Persistence.Repositories.Security
             _context = context;
         }
 
-        public async Task<Usuario?> GetUsuarioByNombreUsuarioAsync(string nombreUsuario)
+        public Task<bool> ExisteEmailAsync(string email)
         {
-            return await _context.Usuarios
-                .Include(u => u.UsuarioRoles)
-                .ThenInclude(ur => ur.Rol)
-                .FirstOrDefaultAsync(u => u.NombreUsuario == nombreUsuario && !u.EstaEliminado);
+            throw new NotImplementedException();
         }
 
-        public async Task<Usuario?> GetUsuarioByEmailAsync(string email)
+        public Task<bool> ExisteNombreUsuarioAsync(string nombreUsuario)
         {
-            return await _context.Usuarios
-                .Include(u => u.UsuarioRoles)
-                .ThenInclude(ur => ur.Rol)
-                .FirstOrDefaultAsync(u => u.Email == email && !u.EstaEliminado);
-        }
-        public async Task<bool> ExisteNombreUsuarioAsync(string nombreUsuario)
-        {
-            return await _context.Usuarios
-                .AnyAsync(u => u.NombreUsuario == nombreUsuario && !u.EstaEliminado);
+            throw new NotImplementedException();
         }
 
-        public async Task<bool> ExisteEmailAsync(string email)
+        public Task<Usuario?> GetUsuarioByEmailAsync(string email)
         {
-            return await _context.Usuarios
-                .AnyAsync(u => u.Email == email && !u.EstaEliminado);
+            throw new NotImplementedException();
         }
 
-        public async Task<List<Usuario>> GetUsuariosActivosAsync()
+        public Task<Usuario?> GetUsuarioByNombreUsuarioAsync(string nombreUsuario)
         {
-            return await _context.Usuarios
-                .Include(u => u.UsuarioRoles)
-                .ThenInclude(ur => ur.Rol)
-                .Where(u => u.EsActivo && !u.EstaEliminado)
-                .ToListAsync();
+            throw new NotImplementedException();
         }
 
-        public async Task<List<Usuario>> GetUsuariosByRolAsync(string nombreRol)
+        public Task<List<Usuario>> GetUsuariosActivosAsync()
         {
-            return await _context.Usuarios
-                .Include(u => u.UsuarioRoles)
-                .ThenInclude(ur => ur.Rol)
-                .Where(u => u.UsuarioRoles.Any(ur => ur.Rol.Nombre == nombreRol) && !u.EstaEliminado)
-                .ToListAsync();
+            throw new NotImplementedException();
         }
 
-        public async Task<List<Usuario>> ListarActivosAsync()
+        public Task<List<Usuario>> GetUsuariosByRolAsync(string nombreRol)
         {
-            return await GetUsuariosActivosAsync();
+            throw new NotImplementedException();
         }
 
-        public async Task<List<Usuario>> ListarPorRolAsync(string rol)
+        public Task<List<Usuario>> ListarActivosAsync()
         {
-            return await GetUsuariosByRolAsync(rol);
+            throw new NotImplementedException();
         }
+
+        public Task<List<Usuario>> ListarPorRolAsync(string rol)
+        {
+            throw new NotImplementedException();
+        }
+
+        //public async Task<Usuario?> GetUsuarioByNombreUsuarioAsync(string nombreUsuario)
+        //{
+        //    return await _context.Usuarios
+        //        .Include(u => u.UsuarioRoles)
+        //        .ThenInclude(ur => ur.Rol)
+        //        .FirstOrDefaultAsync(u => u.NombreUsuario == nombreUsuario && !u.EstaEliminado);
+        //}
+
+        //public async Task<Usuario?> GetUsuarioByEmailAsync(string email)
+        //{
+        //    return await _context.Usuarios
+        //        .Include(u => u.UsuarioRoles)
+        //        .ThenInclude(ur => ur.Rol)
+        //        .FirstOrDefaultAsync(u => u.Email == email && !u.EstaEliminado);
+        //}
+        //public async Task<bool> ExisteNombreUsuarioAsync(string nombreUsuario)
+        //{
+        //    return await _context.Usuarios
+        //        .AnyAsync(u => u.NombreUsuario == nombreUsuario && !u.EstaEliminado);
+        //}
+
+        //public async Task<bool> ExisteEmailAsync(string email)
+        //{
+        //    return await _context.Usuarios
+        //        .AnyAsync(u => u.Email == email && !u.EstaEliminado);
+        //}
+
+        //public async Task<List<Usuario>> GetUsuariosActivosAsync()
+        //{
+        //    return await _context.Usuarios
+        //        .Include(u => u.UsuarioRoles)
+        //        .ThenInclude(ur => ur.Rol)
+        //        .Where(u => u.EsActivo && !u.EstaEliminado)
+        //        .ToListAsync();
+        //}
+
+        //public async Task<List<Usuario>> GetUsuariosByRolAsync(string nombreRol)
+        //{
+        //    return await _context.Usuarios
+        //        .Include(u => u.UsuarioRoles)
+        //        .ThenInclude(ur => ur.Rol)
+        //        .Where(u => u.UsuarioRoles.Any(ur => ur.Rol.Nombre == nombreRol) && !u.EstaEliminado)
+        //        .ToListAsync();
+        //}
+
+        //public async Task<List<Usuario>> ListarActivosAsync()
+        //{
+        //    return await GetUsuariosActivosAsync();
+        //}
+
+        //public async Task<List<Usuario>> ListarPorRolAsync(string rol)
+        //{
+        //    return await GetUsuariosByRolAsync(rol);
+        //}
     }
 }
