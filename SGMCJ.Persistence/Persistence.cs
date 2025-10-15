@@ -1,17 +1,18 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using SGMCJ.Domain.Interfaces.Repositories;
-using SGMCJ.Domain.Repositories;
+using SGMCJ.Domain.Repositories.Appointments;
+using SGMCJ.Domain.Repositories.Insurance;
 using SGMCJ.Domain.Repositories.Medical;
-using SGMCJ.Domain.Repositories.Security;
-using SGMCJ.Persistence.Ado.Medical;
-using SGMCJ.Persistence.Ado.Security;
-using SGMCJ.Persistence.Base;
+using SGMCJ.Domain.Repositories.System;
+using SGMCJ.Domain.Repositories.Users;
 using SGMCJ.Persistence.Common;
 using SGMCJ.Persistence.Context;
+using SGMCJ.Persistence.Repositories.Appointments;
+using SGMCJ.Persistence.Repositories.Insurance;
 using SGMCJ.Persistence.Repositories.Medical;
-using SGMCJ.Persistence.Repositories.Security;
+using SGMCJ.Persistence.Repositories.System;
+using SGMCJ.Persistence.Repositories.Users;
 
 namespace SGMCJ.Persistence
 {
@@ -19,20 +20,38 @@ namespace SGMCJ.Persistence
     {
         public static IServiceCollection AddPersistenceServices(this IServiceCollection services, IConfiguration cfg)
         {
-            services.AddDbContext<SGMCJDbContext>(options =>
+            // DbContext
+            services.AddDbContext<HealtSyncContext>(options =>
                 options.UseSqlServer(cfg.GetConnectionString("DefaultConnection")));
 
-            services.AddScoped<ICitaRepository, CitaRepository>();
-            services.AddScoped<IMedicoRepository, MedicoRepository>();
-            services.AddScoped<IPacienteRepository, PacienteRepository>();
-            services.AddScoped<IUsuarioRepository, UsuarioRepository>();
-
+            // StoredProcedure Executor
             services.AddScoped<StoredProcedureExecutor>();
-            services.AddScoped<IUsuarioAdoRepository, UsuarioAdoRepository>();
-            services.AddScoped<IMedicoAdoRepository, MedicoAdoRepository>();
-            services.AddScoped<IPacienteAdoRepository, PacienteAdoRepository>();
-            services.AddScoped<ICitaAdoRepository, CitaAdoRepository>();
-            
+
+            // Appointments Repositories
+            services.AddScoped<IAppointmentRepository, AppointmentRepository>();
+            services.AddScoped<IDoctorAvailabilityRepository, DoctorAvailabilityRepository>();
+
+            // Insurance Repositories
+            services.AddScoped<IInsuranceProviderRepository, InsuranceProviderRepository>();
+            services.AddScoped<INetworkTypeRepository, NetworkTypeRepository>();
+
+            // Medical Repositories
+            services.AddScoped<IAvailabilityModeRepository, AvailabilityModeRepository>();
+            services.AddScoped<IMedicalRecordRepository, MedicalRecordRepository>();
+            services.AddScoped<ISpecialtyRepository, SpecialtyRepository>();
+
+            // System Repositories
+            services.AddScoped<INotificationRepository, NotificationRepository>();
+            services.AddScoped<IRoleRepository, RoleRepository>();
+            services.AddScoped<IStatusRepository, StatusRepository>();
+
+            // Users Repositories
+            services.AddScoped<IDoctorRepository, DoctorRepository>();
+            services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+            services.AddScoped<IPatientRepository, PatientRepository>();
+            services.AddScoped<IPersonRepository, PersonRepository>();
+            services.AddScoped<IUserRepository, UserRepository>();
+
             return services;
         }
     }
