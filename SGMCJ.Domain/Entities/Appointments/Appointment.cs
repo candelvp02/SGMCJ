@@ -12,8 +12,8 @@ namespace SGMCJ.Domain.Entities.Appointments
         public int DoctorId { get; set; }
         public DateTime AppointmentDate { get; set; }
         public int StatusId { get; set; }
-        public string? Reason { get; set; }
-        public string? Notes { get; set; }
+        //public string? Reason { get; set; }
+        //public string? Notes { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
     }

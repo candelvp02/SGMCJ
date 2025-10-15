@@ -136,8 +136,8 @@ namespace SGMCJ.Application.Services
                     DoctorId = dto.DoctorId,
                     AppointmentDate = dto.AppointmentDate,
                     StatusId = 1,
-                    Reason = dto.Reason,
-                    Notes = dto.Notes,
+                   // Reason = dto.Reason,
+                  //  Notes = dto.Notes,
                     CreatedAt = DateTime.Now
                 };
 
@@ -171,7 +171,7 @@ namespace SGMCJ.Application.Services
 
                 appointment.AppointmentDate = dto.AppointmentDate;
                 appointment.StatusId = dto.StatusId;
-                appointment.Notes = dto.Notes;
+              //  appointment.Notes = dto.Notes;
                 appointment.UpdatedAt = DateTime.Now;
 
                 await _appointmentRepo.UpdateAsync(appointment);
@@ -189,7 +189,7 @@ namespace SGMCJ.Application.Services
             return result;
         }
 
-        public async Task<OperationResult> CancelAsync(int appointmentId, string reason)
+        public async Task<OperationResult> CancelAsync(int appointmentId) //string reason)
         {
             var result = new OperationResult();
             try
@@ -204,9 +204,9 @@ namespace SGMCJ.Application.Services
                 }
 
                 appointment.StatusId = 3;
-                appointment.Notes = string.IsNullOrWhiteSpace(reason)
-                    ? appointment.Notes
-                    : $"{appointment.Notes}\nCancelación: {reason}";
+              //  appointment.Notes = string.IsNullOrWhiteSpace(reason)
+                //    ? appointment.Notes
+               //     : $"{appointment.Notes}\nCancelación: {reason}";
                 appointment.UpdatedAt = DateTime.Now;
 
                 await _appointmentRepo.UpdateAsync(appointment);
@@ -386,8 +386,8 @@ namespace SGMCJ.Application.Services
             DoctorId = a.DoctorId,
             AppointmentDate = a.AppointmentDate,
             StatusId = a.StatusId,
-            Reason = a.Reason,
-            Notes = a.Notes,
+         //   Reason = a.Reason,
+         //   Notes = a.Notes,
             CreatedAt = a.CreatedAt
         };
     }
