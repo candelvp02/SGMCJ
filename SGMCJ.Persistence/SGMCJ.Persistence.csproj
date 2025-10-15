@@ -8,10 +8,12 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Data.SqlClient" Version="5.1.5" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\SGMCJ.Application\SGMCJ.Application.csproj" />
     <ProjectReference Include="..\SGMCJ.Domain\SGMCJ.Domain.csproj" />
   </ItemGroup>
 

@@ -12,7 +12,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SGMCJ.Application\SGMCJ.Application.csproj" />
+    <ProjectReference Include="..\SGMCJ.Domain\SGMCJ.Domain.csproj" />
+    <ProjectReference Include="..\SGMCJ.Infrastructure\SGMCJ.Infrastructure.csproj" />
     <ProjectReference Include="..\SGMCJ.Persistence\SGMCJ.Persistence.csproj" />
+    <ProjectReference Include="..\SGMCJ.Web\SGMCJ.Web.csproj" />
   </ItemGroup>
 
 </Project>

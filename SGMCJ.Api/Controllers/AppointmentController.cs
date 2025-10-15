@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using SGMCJ.Domain.Repositories.Medical;
+﻿using Microsoft.AspNetCore.Mvc;
+using SGMCJ.Domain.Entities.Appointments;
+using SGMCJ.Domain.Repositories.Appointments;
 
 namespace SGMCJ.Api.Controllers
 {
@@ -8,22 +8,22 @@ namespace SGMCJ.Api.Controllers
     [ApiController]
     public class AppointmentController : ControllerBase
     {
-        private readonly IAppoinmentRepository appoinmentRepository;
+        private readonly IAppointmentRepository appointmentRepository;
 
-        public AppointmentController(IAppoinmentRepository appoinmentRepository)
+        public AppointmentController(IAppointmentRepository appoinmentRepository)
         {
-            this.appoinmentRepository = appoinmentRepository;
+            this.appointmentRepository = appoinmentRepository;
         }
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var appointments = await appoinmentRepository.GetAllAsync();
+            var appointments = await appointmentRepository.GetAllAsync();
             return Ok(appointments);
         }
         [HttpPost("Save")]
-        public async Task<IActionResult> Save(SGMCJ.Domain.Entities.Medical.Appointment appointment)
+        public async Task<IActionResult> Save(Appointment appointment)
         {
-            var newAppointment = await appoinmentRepository.AddAsync(appointment);
+            var newAppointment = await appointmentRepository.AddAsync(appointment);
             return Ok(newAppointment);
         }
     }

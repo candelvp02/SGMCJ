@@ -1,8 +1,9 @@
 using SGMCJ.Application.Interfaces.Service;
 using SGMCJ.Application.Services;
-using SGMCJ.Domain.Repositories.Medical;
+using SGMCJ.Domain.Repositories.Appointments;
 using SGMCJ.Persistence;
-using SGMCJ.Persistence.Repositories.Medical;
+using SGMCJ.Persistence.Repositories;
+using SGMCJ.Persistence.Repositories.Appointments;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,8 +12,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddPersistenceServices(builder.Configuration);
-builder.Services.AddScoped<IAppoinmentRepository, AppoinmentRepository>();
-builder.Services.AddTransient<ICitaService, CitaService>();
+builder.Services.AddScoped<IAppointmentRepository, AppointmentRepository>();
+builder.Services.AddTransient<IAppointmentService, AppointmentService>();
 
 var app = builder.Build();
 
