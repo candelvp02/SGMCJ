@@ -2,7 +2,6 @@
 using SGMCJ.Application.Dto.Appointments;
 using SGMCJ.Application.Interfaces.Service;
 using SGMCJ.Domain.Base;
-using SGMCJ.Domain.Entities.Users;
 using SGMCJ.Domain.Repositories.Appointments;
 
 namespace SGMCJ.Application.Services
@@ -30,7 +29,7 @@ namespace SGMCJ.Application.Services
                 result.Exitoso = true;
                 result.Mensaje = "Citas obtenidas correctamente";
             }
-            catch (Exception ex)
+            catch(Exception ex)
             {
                 _logger.LogError(ex, "Error al obtener todas las citas");
                 result.Exitoso = false;
@@ -38,7 +37,6 @@ namespace SGMCJ.Application.Services
             }
             return result;
         }
-
         public async Task<OperationResult<AppointmentDto>> GetByIdAsync(int id)
         {
             var result = new OperationResult<AppointmentDto>();
@@ -49,7 +47,7 @@ namespace SGMCJ.Application.Services
                 {
                     result.Exitoso = false;
                     result.Mensaje = "Cita no encontrada";
-                    result.Errores.Add("Cita no encontrada");
+                    result.Errores.Add("Cita no enconctrada");
                     return result;
                 }
 
@@ -65,10 +63,9 @@ namespace SGMCJ.Application.Services
             }
             return result;
         }
-
         public async Task<OperationResult<AppointmentDto>> CreateAsync(CreateAppointmentDto dto)
         {
-            var result = new OperationResult<AppointmentDto>();
+            var  result = new OperationResult<AppointmentDto>();
             try
             {
                 if (dto == null)
@@ -78,7 +75,6 @@ namespace SGMCJ.Application.Services
                     result.Errores.Add("El cuerpo de la solicitud es requerido.");
                     return result;
                 }
-
                 if (dto.PatientId <= 0 || dto.DoctorId <= 0)
                 {
                     result.Exitoso = false;
@@ -86,61 +82,45 @@ namespace SGMCJ.Application.Services
                     result.Errores.Add("PatientId y DoctorId son obligatorios.");
                     return result;
                 }
-
                 if (dto.AppointmentDate == default)
                 {
                     result.Exitoso = false;
-                    result.Mensaje = "La AppointmentDate de la cita es obligatoria.";
-                    result.Errores.Add("La AppointmentDate de la cita es obligatoria.");
+                    result.Mensaje = "La fecha de la cita es obligatoria.";
+                    result.Errores.Add("La fecha de la cita es obligatoria.");
                     return result;
                 }
-
-                if (dto.AppointmentDate <= DateTime.Now.AddMinutes(10))
-                {
-                    result.Exitoso = false;
-                    result.Mensaje = "La cita debe programarse con al menos 10 minutos de antelación.";
-                    result.Errores.Add("La cita debe programarse con al menos 10 minutos de antelación.");
-                    return result;
-                }
-
-                var patient = await _appointmentRepo.GetByPatientIdAsync(dto.PatientId);
-                if (!patient.Any())
+                // validacion existencia de paciente y doctor
+                if (!await _appointmentRepo.PatientExistsAsync(dto.PatientId))   //OJO AQUIIIIIII AGREGAR EN IAPPOINTMENTREPOSITORY
                 {
                     result.Exitoso = false;
                     result.Mensaje = "El paciente no existe.";
                     result.Errores.Add("El paciente no existe.");
                     return result;
                 }
-
-                var doctor = await _appointmentRepo.GetByDoctorIdAsync(dto.DoctorId);
-                if (!doctor.Any())
+                if (!await _appointmentRepo.DoctorExistsAsync(dto.DoctorId)) // OJO AQUIIII AGREGAR EN IAPPOINTMENTREPOSITORY.CS
                 {
                     result.Exitoso = false;
-                    result.Mensaje = "El médico no existe.";
-                    result.Errores.Add("El médico no existe.");
+                    result.Mensaje = "El doctor no existe.";
+                    result.Errores.Add("El doctor no existe.");
                     return result;
                 }
-
-                var isAvailable = await _appointmentRepo.ExistsInTimeSlotAsync(dto.DoctorId, dto.AppointmentDate);
-                if (isAvailable)
+                // valicacion de reglas de negocio de appointment
+                var validation = await ValidateAppointmentDateAsync(dto.DoctorId, dto.AppointmentDate);
+                if (!validation.Exitoso)
                 {
                     result.Exitoso = false;
-                    result.Mensaje = "El médico ya tiene una cita en ese horario.";
-                    result.Errores.Add("El médico ya tiene una cita en ese horario.");
+                    result.Mensaje = "Validacion fallida.";
+                    result.Errores.AddRange(validation.Errores);
                     return result;
                 }
-
                 var appointment = new SGMCJ.Domain.Entities.Appointments.Appointment
                 {
                     PatientId = dto.PatientId,
                     DoctorId = dto.DoctorId,
                     AppointmentDate = dto.AppointmentDate,
-                    StatusId = 1,
-                   // Reason = dto.Reason,
-                  //  Notes = dto.Notes,
+                    StatusId = AppointmentStatus.Scheduled,
                     CreatedAt = DateTime.Now
                 };
-
                 var created = await _appointmentRepo.AddAsync(appointment);
                 result.Datos = MapToDto(created);
                 result.Exitoso = true;
@@ -150,11 +130,10 @@ namespace SGMCJ.Application.Services
             {
                 _logger.LogError(ex, "Error inesperado al crear la cita. PatientId={PatientId}, DoctorId={DoctorId}", dto?.PatientId, dto?.DoctorId);
                 result.Exitoso = false;
-                result.Mensaje = "Ocurrió un error interno al crear la cita.";
+                result.Mensaje = "Ocurrio un error interno al crear la cita.";
             }
             return result;
         }
-
         public async Task<OperationResult<AppointmentDto>> UpdateAsync(UpdateAppointmentDto dto)
         {
             var result = new OperationResult<AppointmentDto>();
@@ -168,14 +147,11 @@ namespace SGMCJ.Application.Services
                     result.Errores.Add("Cita no encontrada");
                     return result;
                 }
-
                 appointment.AppointmentDate = dto.AppointmentDate;
                 appointment.StatusId = dto.StatusId;
-              //  appointment.Notes = dto.Notes;
                 appointment.UpdatedAt = DateTime.Now;
 
                 await _appointmentRepo.UpdateAsync(appointment);
-
                 result.Datos = MapToDto(appointment);
                 result.Exitoso = true;
                 result.Mensaje = "Cita actualizada correctamente.";
@@ -188,8 +164,7 @@ namespace SGMCJ.Application.Services
             }
             return result;
         }
-
-        public async Task<OperationResult> CancelAsync(int appointmentId) //string reason)
+         public async Task<OperationResult> CancelAsync(int appointmentId)
         {
             var result = new OperationResult();
             try
@@ -202,27 +177,21 @@ namespace SGMCJ.Application.Services
                     result.Errores.Add("La cita no existe.");
                     return result;
                 }
-
-                appointment.StatusId = 3;
-              //  appointment.Notes = string.IsNullOrWhiteSpace(reason)
-                //    ? appointment.Notes
-               //     : $"{appointment.Notes}\nCancelación: {reason}";
+                appointment.StatusId = AppointmentStatus.Cancelled; // OJO NO EXISTEEEE AGREGAR
                 appointment.UpdatedAt = DateTime.Now;
 
                 await _appointmentRepo.UpdateAsync(appointment);
-
                 result.Exitoso = true;
                 result.Mensaje = "Cita cancelada correctamente.";
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al cancelar la cita {AppointmentId}", appointmentId);
+                _logger.LogError(ex, "Error al cancelar cita {ApppointmentId}", appointmentId);
                 result.Exitoso = false;
-                result.Mensaje = "Ocurrió un error interno al cancelar la cita.";
+                result.Mensaje = "Error al cancelar cita";
             }
             return result;
         }
-
         public async Task<OperationResult> ConfirmAsync(int appointmentId)
         {
             var result = new OperationResult();
@@ -236,23 +205,20 @@ namespace SGMCJ.Application.Services
                     result.Errores.Add("La cita no existe.");
                     return result;
                 }
-
-                appointment.StatusId = 2;
+                appointment.StatusId = AppointmentStatus.Confirmed; // OJO NO EXISTEEEE AGREGAR
                 appointment.UpdatedAt = DateTime.Now;
                 await _appointmentRepo.UpdateAsync(appointment);
-
                 result.Exitoso = true;
                 result.Mensaje = "Cita confirmada correctamente.";
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al confirmar la cita {AppointmentId}", appointmentId);
+                _logger.LogError(ex, "Error al confirmar cita {AppointmentId}", appointmentId);
                 result.Exitoso = false;
-                result.Mensaje = "Ocurrió un error interno al confirmar la cita.";
+                result.Mensaje = "Error al confirmar cita";
             }
             return result;
         }
-
         public async Task<OperationResult> RescheduleAsync(int appointmentId, DateTime newDate)
         {
             var result = new OperationResult();
@@ -266,41 +232,29 @@ namespace SGMCJ.Application.Services
                     result.Errores.Add("La cita no existe.");
                     return result;
                 }
-
-                if (newDate <= DateTime.Now.AddMinutes(10))
+                var validation = await ValidateAppointmentDateAsync(appointment.DoctorId, newDate);
+                if (!validation.Exitoso)
                 {
                     result.Exitoso = false;
-                    result.Mensaje = "La nueva fecha/hora debe ser a futuro.";
-                    result.Errores.Add("La nueva fecha/hora debe ser a futuro.");
+                    result.Mensaje = "Validacion fallida.";
+                    result.Errores.AddRange(validation.Errores);
                     return result;
                 }
-
-                var isAvailable = await _appointmentRepo.ExistsInTimeSlotAsync(appointment.DoctorId, newDate);
-                if (isAvailable)
-                {
-                    result.Exitoso = false;
-                    result.Mensaje = "El médico ya tiene una cita en ese horario.";
-                    result.Errores.Add("El médico ya tiene una cita en ese horario.");
-                    return result;
-                }
-
                 appointment.AppointmentDate = newDate;
-                appointment.StatusId = 1;
+                appointment.StatusId = AppointmentStatus.Scheduled; // OJO NO EXISTEEEE AGREGAR
                 appointment.UpdatedAt = DateTime.Now;
                 await _appointmentRepo.UpdateAsync(appointment);
-
                 result.Exitoso = true;
                 result.Mensaje = "Cita reprogramada correctamente.";
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al reprogramar la cita {AppointmentId}", appointmentId);
+                _logger.LogError(ex, "Error al reprogramar cita {AppointmentId}", appointmentId);
                 result.Exitoso = false;
-                result.Mensaje = "Ocurrió un error interno al reprogramar la cita.";
+                result.Mensaje = "Error al reprogramar cita";
             }
             return result;
         }
-
         public async Task<OperationResult<List<AppointmentDto>>> GetByPatientIdAsync(int patientId)
         {
             var result = new OperationResult<List<AppointmentDto>>();
@@ -319,7 +273,6 @@ namespace SGMCJ.Application.Services
             }
             return result;
         }
-
         public async Task<OperationResult<List<AppointmentDto>>> GetByDoctorIdAsync(int doctorId)
         {
             var result = new OperationResult<List<AppointmentDto>>();
@@ -332,13 +285,12 @@ namespace SGMCJ.Application.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al obtener citas del médico {DoctorId}", doctorId);
+                _logger.LogError(ex, "Error al obtener citas del doctor {DoctorId}", doctorId);
                 result.Exitoso = false;
-                result.Mensaje = "Error al obtener citas del médico";
+                result.Mensaje = "Error al obtener citas del doctor";
             }
             return result;
         }
-
         public async Task<OperationResult<List<AppointmentDto>>> GetByDateRangeAsync(DateTime startDate, DateTime endDate)
         {
             var result = new OperationResult<List<AppointmentDto>>();
@@ -357,7 +309,6 @@ namespace SGMCJ.Application.Services
             }
             return result;
         }
-
         public async Task<OperationResult<List<AppointmentDto>>> GetUpcomingForPatientAsync(int patientId)
         {
             var result = new OperationResult<List<AppointmentDto>>();
@@ -368,17 +319,34 @@ namespace SGMCJ.Application.Services
                 var upcoming = appointments.Where(a => a.AppointmentDate > now).OrderBy(a => a.AppointmentDate).ToList();
                 result.Datos = upcoming.Select(MapToDto).ToList();
                 result.Exitoso = true;
-                result.Mensaje = "Citas próximas obtenidas correctamente";
+                result.Mensaje = "Citas proximas obtenidas correctamente";
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al obtener citas próximas para el paciente {PatientId}", patientId);
+                _logger.LogError(ex, "Error al obtener citas proximas para el paciente {PatientId}", patientId);
                 result.Exitoso = false;
-                result.Mensaje = "Error al obtener citas próximas para el paciente";
+                result.Mensaje = "Error al obtener citas proximas para el paciente";
             }
             return result;
         }
-
+        // metodos privado de validacion
+        private async Task<OperationResult> ValidateAppointmentDateAsync(int doctorId, DateTime date)
+        {
+            var result = new OperationResult();
+            if (date <= DateTime.Now.AddMinutes(10))
+            {
+                result.Errores.Add("La cita debe programarse con al menos 10 minutos de antelacion.");
+                return result;
+            }
+            if (await _appointmentRepo.ExistsInTimeSlotAsync(doctorId, date))
+            {
+                result.Errores.Add("El doctor ya tiene una cita en ese horario.");
+                return result;
+            }
+            result.Exitoso = true;
+            return result;
+        }
+        // mapeo
         private static AppointmentDto MapToDto(SGMCJ.Domain.Entities.Appointments.Appointment a) => new()
         {
             AppointmentId = a.AppointmentId,
@@ -386,9 +354,14 @@ namespace SGMCJ.Application.Services
             DoctorId = a.DoctorId,
             AppointmentDate = a.AppointmentDate,
             StatusId = a.StatusId,
-         //   Reason = a.Reason,
-         //   Notes = a.Notes,
             CreatedAt = a.CreatedAt
         };
+    }
+    // constantes para evitar numeros magicos
+    internal static class AppointmentStatus
+    {
+        public const int Scheduled = 1;
+        public const int Confirmed = 2;
+        public const int Cancelled = 3;
     }
 }
