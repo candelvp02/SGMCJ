@@ -9,7 +9,7 @@ namespace SGMCJ.Application.Interfaces.Service
         Task<OperationResult<AppointmentDto>> GetByIdAsync(int id);
         Task<OperationResult<AppointmentDto>> CreateAsync(CreateAppointmentDto appointmentDto);
         Task<OperationResult<AppointmentDto>> UpdateAsync(UpdateAppointmentDto appointmentDto);
-        //Task<OperationResult> CancelAsync(int appointmentId, string reason);
+        Task<OperationResult> CancelAsync(int appointmentId);
         Task<OperationResult> ConfirmAsync(int appointmentId);
         Task<OperationResult> RescheduleAsync(int appointmentId, DateTime newDate);
         Task<OperationResult<List<AppointmentDto>>> GetByPatientIdAsync(int patientId);
