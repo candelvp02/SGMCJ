@@ -45,9 +45,7 @@ namespace SGMCJ.Persistence.Repositories.Users
         {
             return await _dbSet
                 .Include(p => p.Appointments)
-                .ThenInclude(a => a.DoctorId)
-                .Include(p => p.Appointments)
-                .ThenInclude(a => a.StatusId)
+                    .ThenInclude(a => a.DoctorId)
                 .FirstOrDefaultAsync(p => p.PatientId == patientId);
         }
 
@@ -55,18 +53,33 @@ namespace SGMCJ.Persistence.Repositories.Users
         {
             return await _dbSet
                 .Include(p => p.MedicalRecords)
-                .ThenInclude(mr => mr.Doctor)
+                    .ThenInclude(mr => mr.Doctor)
                 .FirstOrDefaultAsync(p => p.PatientId == patientId);
         }
 
-        Task IPatientRepository.DeleteAsync(int patientId)
+        public async Task<Patient?> GetByIdentificationNumberAsync(string identificationNumber)
         {
-            return DeleteAsync(patientId);
+            return await _dbSet
+                .Include(p => p.PatientNavigation)
+                .FirstOrDefaultAsync(p => p.PatientNavigation.IdentificationNumber == identificationNumber);
         }
 
-        public Task<bool> ExistsAsync(int patientId)
+        public async Task<bool> ExistsAsync(int patientId)
         {
-            throw new NotImplementedException();
+            return await _dbSet.AnyAsync(p => p.PatientId == patientId);
+        }
+        public Task UpdateAsync(Patient patient)
+        {
+            _context.Entry(patient).State = EntityState.Modified;
+            return Task.CompletedTask;
+        }
+        public async Task DeleteAsync(int patientId)
+        {
+            var patientToDelete = await _dbSet.FindAsync(patientId);
+            if (patientToDelete != null)
+            {
+                _dbSet.Remove(patientToDelete);
+            }
         }
     }
 }

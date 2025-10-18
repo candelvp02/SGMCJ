@@ -42,26 +42,38 @@ namespace SGMCJ.Application.Services
         public async Task<OperationResult<PatientDto>> GetByIdAsync(int id)
         {
             var result = new OperationResult<PatientDto>();
+            _logger.LogInformation("Buscando paciente con ID: {PatientId}", id);
             try
             {
+                if (id <= 0)
+                {
+                    _logger.LogWarning("ID de paciente inválido: {PatientId}", id);
+                    result.Exitoso = false;
+                    result.Mensaje = "ID de paciente inválido.";
+                    result.Errores.Add("El ID debe ser un número positivo.");
+                    return result;
+                }
+
                 var patient = await _patientRepo.GetByIdWithDetailsAsync(id);
                 if (patient == null)
                 {
+                    _logger.LogWarning("Paciente no encontrado con ID: {PatientId}", id);
                     result.Exitoso = false;
-                    result.Mensaje = "Paciente no encontrado";
-                    result.Errores.Add("Paciente no encontrado");
+                    result.Mensaje = "Paciente no encontrado.";
+                    result.Errores.Add($"No existe un paciente con el ID {id}.");
                     return result;
                 }
 
                 result.Datos = MapToDto(patient);
                 result.Exitoso = true;
-                result.Mensaje = "Paciente obtenido correctamente";
+                result.Mensaje = "Paciente obtenido correctamente.";
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al obtener paciente {Id}", id);
                 result.Exitoso = false;
-                result.Mensaje = "Error al obtener paciente";
+                result.Mensaje = "Error al obtener paciente.";
+                result.Errores.Add(ex.Message);
             }
             return result;
         }
@@ -69,15 +81,36 @@ namespace SGMCJ.Application.Services
         public async Task<OperationResult<PatientDto>> CreateAsync(RegisterPatientDto dto)
         {
             var result = new OperationResult<PatientDto>();
+            _logger.LogInformation("Iniciando creación de nuevo paciente.");
             try
             {
                 if (dto == null)
                 {
                     result.Exitoso = false;
-                    result.Mensaje = "Los datos del paciente son requeridos";
-                    result.Errores.Add("Los datos del paciente son requeridos");
+                    result.Mensaje = "Los datos del paciente son requeridos.";
+                    result.Errores.Add("El objeto de entrada no puede ser nulo.");
                     return result;
                 }
+
+                if (string.IsNullOrWhiteSpace(dto.FirstName) || string.IsNullOrWhiteSpace(dto.LastName) || string.IsNullOrWhiteSpace(dto.IdentificationNumber))
+                {
+                    result.Exitoso = false;
+                    result.Mensaje = "Datos incompletos.";
+                    result.Errores.Add("Nombre, Apellido y Cédula son obligatorios.");
+                    return result;
+                }
+
+            var existingPatient = await _patientRepo.GetByIdentificationNumberAsync(dto.IdentificationNumber);
+                if (existingPatient != null)
+                {
+                    _logger.LogWarning("Intento de crear paciente con cédula duplicada: {IdNumber}", dto.IdentificationNumber);
+                    result.Exitoso = false;
+                    result.Mensaje = "Ya existe un paciente con ese número de identificación.";
+                    result.Errores.Add($"La cédula '{dto.IdentificationNumber}' ya está registrada.");
+                    return result;
+                }
+
+                _logger.LogInformation("Validaciones completadas exitosamente.");
 
                 var person = new Person
                 {
@@ -90,7 +123,6 @@ namespace SGMCJ.Application.Services
 
                 var patient = new Patient
                 {
-                    Gender = dto.Gender,
                     PhoneNumber = dto.PhoneNumber,
                     Address = dto.Address,
                     EmergencyContactName = dto.EmergencyContactName,
@@ -106,13 +138,15 @@ namespace SGMCJ.Application.Services
                 var createdPatient = await _patientRepo.AddAsync(patient);
                 result.Datos = MapToDto(createdPatient);
                 result.Exitoso = true;
-                result.Mensaje = "Paciente creado correctamente";
+                result.Mensaje = "Paciente creado correctamente.";
+                _logger.LogInformation("Paciente creado con ID: {PatientId}", createdPatient.PatientId);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error creando paciente");
                 result.Exitoso = false;
-                result.Mensaje = "Error al crear paciente";
+                result.Mensaje = "Error al crear paciente.";
+                result.Errores.Add(ex.Message);
             }
             return result;
         }
@@ -120,24 +154,28 @@ namespace SGMCJ.Application.Services
         public async Task<OperationResult<PatientDto>> UpdateAsync(UpdatePatientDto dto)
         {
             var result = new OperationResult<PatientDto>();
+            _logger.LogInformation("Iniciando actualización de paciente ID: {PatientId}", dto?.PatientId);
             try
             {
-                if (dto == null)
+                if (dto == null || dto.PatientId <= 0)
                 {
                     result.Exitoso = false;
-                    result.Mensaje = "Los datos del paciente son requeridos";
-                    result.Errores.Add("Los datos del paciente son requeridos");
+                    result.Mensaje = "Datos de entrada inválidos.";
+                    result.Errores.Add("Se requiere un DTO válido con un ID de paciente positivo.");
                     return result;
                 }
 
                 var patient = await _patientRepo.GetByIdAsync(dto.PatientId);
                 if (patient == null)
                 {
+                    _logger.LogWarning("Intento de actualizar paciente inexistente: {PatientId}", dto.PatientId);
                     result.Exitoso = false;
-                    result.Mensaje = "Paciente no encontrado";
-                    result.Errores.Add("Paciente no encontrado");
+                    result.Mensaje = "Paciente no encontrado.";
+                    result.Errores.Add($"No existe un paciente con el ID {dto.PatientId}.");
                     return result;
                 }
+
+                _logger.LogInformation("Validaciones completadas, paciente encontrado.");
 
                 patient.PhoneNumber = dto.PhoneNumber;
                 patient.Address = dto.Address;
@@ -151,13 +189,15 @@ namespace SGMCJ.Application.Services
 
                 result.Datos = MapToDto(patient);
                 result.Exitoso = true;
-                result.Mensaje = "Paciente actualizado correctamente";
+                result.Mensaje = "Paciente actualizado correctamente.";
+                _logger.LogInformation("Paciente {PatientId} actualizado exitosamente.", patient.PatientId);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error actualizando paciente {PatientId}", dto?.PatientId);
                 result.Exitoso = false;
-                result.Mensaje = "Error al actualizar paciente";
+                result.Mensaje = "Error al actualizar paciente.";
+                result.Errores.Add(ex.Message);
             }
             return result;
         }
@@ -165,14 +205,33 @@ namespace SGMCJ.Application.Services
         public async Task<OperationResult> DeleteAsync(int id)
         {
             var result = new OperationResult();
+            _logger.LogInformation("Iniciando desactivación de paciente ID: {PatientId}", id);
             try
             {
+                if (id <= 0)
+                {
+                    _logger.LogWarning("ID de paciente inválido para eliminar: {PatientId}", id);
+                    result.Exitoso = false;
+                    result.Mensaje = "ID de paciente inválido.";
+                    result.Errores.Add("El ID debe ser un número positivo.");
+                    return result;
+                }
+
                 var patient = await _patientRepo.GetByIdAsync(id);
                 if (patient == null)
                 {
+                    _logger.LogWarning("Intento de eliminar paciente inexistente: {PatientId}", id);
                     result.Exitoso = false;
-                    result.Mensaje = "Paciente no encontrado";
-                    result.Errores.Add("Paciente no encontrado");
+                    result.Mensaje = "Paciente no encontrado.";
+                    result.Errores.Add($"No existe un paciente con el ID {id}.");
+                    return result;
+                }
+
+                if (!patient.IsActive)
+                {
+                    _logger.LogInformation("Paciente {PatientId} ya se encontraba inactivo.", id);
+                    result.Exitoso = true;
+                    result.Mensaje = "El paciente ya se encontraba inactivo.";
                     return result;
                 }
 
@@ -181,13 +240,15 @@ namespace SGMCJ.Application.Services
                 await _patientRepo.UpdateAsync(patient);
 
                 result.Exitoso = true;
-                result.Mensaje = "Paciente eliminado correctamente";
+                result.Mensaje = "Paciente desactivado correctamente.";
+                _logger.LogInformation("Paciente {PatientId} desactivado exitosamente.", id);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error eliminando paciente {Id}", id);
                 result.Exitoso = false;
-                result.Mensaje = "Error al eliminar paciente";
+                result.Mensaje = "Error al eliminar paciente.";
+                result.Errores.Add(ex.Message);
             }
             return result;
         }
@@ -240,7 +301,6 @@ namespace SGMCJ.Application.Services
                 {
                     result.Exitoso = false;
                     result.Mensaje = "Paciente no encontrado";
-                    result.Errores.Add("Paciente no encontrado");
                     return result;
                 }
 
@@ -262,8 +322,7 @@ namespace SGMCJ.Application.Services
             var result = new OperationResult<bool>();
             try
             {
-                var exists = await _patientRepo.ExistsAsync(patientId);
-                result.Datos = exists;
+                result.Datos = await _patientRepo.ExistsAsync(patientId);
                 result.Exitoso = true;
                 result.Mensaje = "Verificación completada";
             }
@@ -278,29 +337,7 @@ namespace SGMCJ.Application.Services
 
         public async Task<OperationResult<PatientDto>> GetByIdWithDetailsAsync(int patientId)
         {
-            var result = new OperationResult<PatientDto>();
-            try
-            {
-                var patient = await _patientRepo.GetByIdWithDetailsAsync(patientId);
-                if (patient == null)
-                {
-                    result.Exitoso = false;
-                    result.Mensaje = "Paciente no encontrado";
-                    result.Errores.Add("Paciente no encontrado");
-                    return result;
-                }
-
-                result.Datos = MapToDto(patient);
-                result.Exitoso = true;
-                result.Mensaje = "Paciente con detalles obtenido";
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error obteniendo paciente con detalles {PatientId}", patientId);
-                result.Exitoso = false;
-                result.Mensaje = "Error al obtener paciente con detalles";
-            }
-            return result;
+            return await GetByIdAsync(patientId);
         }
 
         public async Task<OperationResult<List<PatientDto>>> GetWithAppointmentsAsync(int patientId)
@@ -313,7 +350,6 @@ namespace SGMCJ.Application.Services
                 {
                     result.Exitoso = false;
                     result.Mensaje = "Paciente no encontrado";
-                    result.Errores.Add("Paciente no encontrado");
                     return result;
                 }
 
@@ -340,7 +376,6 @@ namespace SGMCJ.Application.Services
                 {
                     result.Exitoso = false;
                     result.Mensaje = "Paciente no encontrado";
-                    result.Errores.Add("Paciente no encontrado");
                     return result;
                 }
 
@@ -362,7 +397,7 @@ namespace SGMCJ.Application.Services
             PatientId = p.PatientId,
             FirstName = p.PatientNavigation?.FirstName ?? string.Empty,
             LastName = p.PatientNavigation?.LastName ?? string.Empty,
-            Email = string.Empty, // Email no está en Person ni en Patient
+            Email = string.Empty,
             PhoneNumber = p.PhoneNumber,
             Address = p.Address,
             EmergencyContactName = p.EmergencyContactName,
