@@ -61,38 +61,26 @@ namespace SGMCJ.Application.Services
         public async Task<OperationResult<DoctorDto>> GetByIdAsync(int id)
         {
             var result = new OperationResult<DoctorDto>();
-            _logger.LogInformation("Buscando doctor con ID: {DoctorId}", id);
             try
             {
-                if (id <= 0)
-                {
-                    _logger.LogWarning("ID de doctor inválido: {DoctorId}", id);
-                    result.Exitoso = false;
-                    result.Mensaje = "ID de doctor inválido.";
-                    result.Errores.Add("El ID debe ser un número positivo.");
-                    return result;
-                }
-
                 var doctor = await _repoEf.GetByIdAsync(id);
                 if (doctor == null)
                 {
-                    _logger.LogWarning("Doctor no encontrado con ID: {DoctorId}", id);
                     result.Exitoso = false;
-                    result.Mensaje = "Médico no encontrado.";
-                    result.Errores.Add($"No existe un médico con el ID {id}.");
+                    result.Mensaje = "Médico no encontrado";
+                    result.Errores.Add("Médico no encontrado");
                     return result;
                 }
 
                 result.Datos = MapToDto(doctor);
                 result.Exitoso = true;
-                result.Mensaje = "Médico obtenido correctamente.";
+                result.Mensaje = "Médico obtenido correctamente";
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error obteniendo médico {DoctorId}", id);
                 result.Exitoso = false;
-                result.Mensaje = "Error al obtener médico.";
-                result.Errores.Add(ex.Message);
+                result.Mensaje = "Error al obtener médico";
             }
             return result;
         }
@@ -102,18 +90,12 @@ namespace SGMCJ.Application.Services
             var result = new OperationResult<DoctorDto>();
             try
             {
-                if (id <= 0)
-                {
-                    result.Exitoso = false;
-                    result.Mensaje = "ID inválido";
-                    return result;
-                }
-
                 var doctor = await _repoEf.GetByIdWithDetailsAsync(id);
                 if (doctor == null)
                 {
                     result.Exitoso = false;
                     result.Mensaje = "Médico no encontrado";
+                    result.Errores.Add("Médico no encontrado");
                     return result;
                 }
 
@@ -135,18 +117,12 @@ namespace SGMCJ.Application.Services
             var result = new OperationResult<DoctorDto>();
             try
             {
-                if (id <= 0)
-                {
-                    result.Exitoso = false;
-                    result.Mensaje = "ID inválido";
-                    return result;
-                }
-
                 var doctor = await _repoEf.GetByIdWithAppointmentsAsync(id);
                 if (doctor == null)
                 {
                     result.Exitoso = false;
                     result.Mensaje = "Médico no encontrado";
+                    result.Errores.Add("Médico no encontrado");
                     return result;
                 }
 
@@ -166,36 +142,25 @@ namespace SGMCJ.Application.Services
         public async Task<OperationResult<DoctorDto>> CreateAsync(DoctorDto doctorDto)
         {
             var result = new OperationResult<DoctorDto>();
-            _logger.LogInformation("Iniciando creación de nuevo doctor.");
             try
             {
                 if (doctorDto == null)
                 {
                     result.Exitoso = false;
-                    result.Mensaje = "Los datos del médico son requeridos.";
-                    result.Errores.Add("El objeto de entrada no puede ser nulo.");
+                    result.Mensaje = "Los datos del médico son requeridos";
+                    result.Errores.Add("Los datos del médico son requeridos");
                     return result;
                 }
 
-                if (string.IsNullOrWhiteSpace(doctorDto.LicenseNumber))
-                {
-                    result.Exitoso = false;
-                    result.Mensaje = "El número de licencia es obligatorio.";
-                    result.Errores.Add("LicenseNumber no puede estar vacío.");
-                    return result;
-                }
-
+                // Validar licencia única
                 var existeLicencia = await _repoEf.ExistsByLicenseNumberAsync(doctorDto.LicenseNumber);
                 if (existeLicencia)
                 {
-                    _logger.LogWarning("Intento de crear doctor con licencia duplicada: {LicenseNumber}", doctorDto.LicenseNumber);
                     result.Exitoso = false;
-                    result.Mensaje = "Ya existe un médico con ese número de licencia.";
-                    result.Errores.Add($"La licencia '{doctorDto.LicenseNumber}' ya está en uso.");
+                    result.Mensaje = "Ya existe un médico con ese número de licencia";
+                    result.Errores.Add("Ya existe un médico con ese número de licencia");
                     return result;
                 }
-
-                _logger.LogInformation("Validaciones completadas exitosamente.");
 
                 var doctor = new Doctor
                 {
@@ -215,15 +180,13 @@ namespace SGMCJ.Application.Services
                 var createdDoctor = await _repoEf.AddAsync(doctor);
                 result.Datos = MapToDto(createdDoctor);
                 result.Exitoso = true;
-                result.Mensaje = "Médico creado correctamente.";
-                _logger.LogInformation("Doctor creado con ID: {DoctorId}", createdDoctor.DoctorId);
+                result.Mensaje = "Médico creado correctamente";
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error creando médico");
                 result.Exitoso = false;
-                result.Mensaje = "Error al crear médico.";
-                result.Errores.Add(ex.Message);
+                result.Mensaje = "Error al crear médico";
             }
             return result;
         }
@@ -231,28 +194,24 @@ namespace SGMCJ.Application.Services
         public async Task<OperationResult<DoctorDto>> UpdateAsync(UpdateDoctorDto doctorDto)
         {
             var result = new OperationResult<DoctorDto>();
-            _logger.LogInformation("Iniciando actualización de doctor ID: {DoctorId}", doctorDto?.DoctorId);
             try
             {
-                if (doctorDto == null || doctorDto.DoctorId <= 0)
+                if (doctorDto == null)
                 {
                     result.Exitoso = false;
-                    result.Mensaje = "Datos de entrada inválidos.";
-                    result.Errores.Add("Se requiere un DTO válido con un ID de doctor positivo.");
+                    result.Mensaje = "Los datos del médico son requeridos";
+                    result.Errores.Add("Los datos del médico son requeridos");
                     return result;
                 }
 
                 var doctor = await _repoEf.GetByIdAsync(doctorDto.DoctorId);
                 if (doctor == null)
                 {
-                    _logger.LogWarning("Intento de actualizar doctor inexistente: {DoctorId}", doctorDto.DoctorId);
                     result.Exitoso = false;
-                    result.Mensaje = "Médico no encontrado.";
-                    result.Errores.Add($"No existe un médico con el ID {doctorDto.DoctorId}.");
+                    result.Mensaje = "Médico no encontrado";
+                    result.Errores.Add("Médico no encontrado");
                     return result;
                 }
-
-                _logger.LogInformation("Validaciones completadas, doctor encontrado.");
 
                 doctor.PhoneNumber = doctorDto.PhoneNumber;
                 doctor.YearsOfExperience = doctorDto.YearsOfExperience;
@@ -267,15 +226,13 @@ namespace SGMCJ.Application.Services
                 await _repoEf.UpdateAsync(doctor);
                 result.Datos = MapToDto(doctor);
                 result.Exitoso = true;
-                result.Mensaje = "Médico actualizado correctamente.";
-                _logger.LogInformation("Doctor {DoctorId} actualizado exitosamente.", doctor.DoctorId);
+                result.Mensaje = "Médico actualizado correctamente";
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error actualizando médico {DoctorId}", doctorDto?.DoctorId);
                 result.Exitoso = false;
-                result.Mensaje = "Error al actualizar médico.";
-                result.Errores.Add(ex.Message);
+                result.Mensaje = "Error al actualizar médico";
             }
             return result;
         }
@@ -285,7 +242,8 @@ namespace SGMCJ.Application.Services
             var result = new OperationResult<List<DoctorDto>>();
             try
             {
-                var doctors = (await _repoEf.GetAllAsync()).Where(d => d.SpecialtyId == specialtyId).ToList();
+                var allDoctors = await _repoEf.GetAllAsync();
+                var doctors = allDoctors.Where(d => d.SpecialtyId == specialtyId).ToList();
                 result.Datos = doctors.Select(MapToDto).ToList();
                 result.Exitoso = true;
                 result.Mensaje = "Médicos obtenidos por especialidad";
@@ -304,7 +262,8 @@ namespace SGMCJ.Application.Services
             var result = new OperationResult<List<DoctorDto>>();
             try
             {
-                var doctors = (await _repoEf.GetAllAsync()).Where(d => d.IsActive).ToList();
+                var allDoctors = await _repoEf.GetAllAsync();
+                var doctors = allDoctors.Where(d => d.IsActive).ToList();
                 result.Datos = doctors.Select(MapToDto).ToList();
                 result.Exitoso = true;
                 result.Mensaje = "Médicos activos obtenidos";
@@ -328,6 +287,7 @@ namespace SGMCJ.Application.Services
                 {
                     result.Exitoso = false;
                     result.Mensaje = "Médico no encontrado";
+                    result.Errores.Add("Médico no encontrado");
                     return result;
                 }
 
@@ -349,7 +309,8 @@ namespace SGMCJ.Application.Services
             var result = new OperationResult<bool>();
             try
             {
-                result.Datos = await _repoEf.ExistsByLicenseNumberAsync(licenseNumber);
+                var existe = await _repoEf.ExistsByLicenseNumberAsync(licenseNumber);
+                result.Datos = existe;
                 result.Exitoso = true;
                 result.Mensaje = "Verificación completada";
             }
@@ -371,10 +332,12 @@ namespace SGMCJ.Application.Services
                 {
                     result.Exitoso = false;
                     result.Mensaje = "La entidad doctor es requerida";
+                    result.Errores.Add("La entidad doctor es requerida");
                     return result;
                 }
 
-                result.Datos = await _repoEf.AddAsync(doctor);
+                var createdDoctor = await _repoEf.AddAsync(doctor);
+                result.Datos = createdDoctor;
                 result.Exitoso = true;
                 result.Mensaje = "Médico creado correctamente";
             }
@@ -396,6 +359,7 @@ namespace SGMCJ.Application.Services
                 {
                     result.Exitoso = false;
                     result.Mensaje = "La entidad doctor es requerida";
+                    result.Errores.Add("La entidad doctor es requerida");
                     return result;
                 }
 

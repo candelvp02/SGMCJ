@@ -35,7 +35,5 @@ namespace SGMCJ.Domain.Repositories.Appointments
         Task<Appointment?> GetByIdWithDetailsAsync(int appointmentId);
         Task<IEnumerable<Appointment>> GetAllWithDetailsAsync();
         Task<bool> ExistsInTimeSlotAsync(int doctorId, DateTime appointmentDate);
-        Task<bool> PatientExistsAsync(int patientId);
-        Task<bool> DoctorExistsAsync(int doctorId);
     }
 }
