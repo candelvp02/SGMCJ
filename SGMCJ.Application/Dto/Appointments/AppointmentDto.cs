@@ -10,8 +10,6 @@
         public DateTime AppointmentDate { get; set; }
         public int StatusId { get; set; }
         public string StatusName { get; set; } = string.Empty;
-        //public string? Reason { get; set; }
-        //public string? Notes { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 }

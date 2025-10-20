@@ -56,15 +56,5 @@ namespace SGMCJ.Persistence.Repositories.Appointments
         {
             throw new NotImplementedException();
         }
-
-        public Task<bool> PatientExistsAsync(int patientId)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> DoctorExistsAsync(int doctorId)
-        {
-            throw new NotImplementedException();
-        }
     }
 }
