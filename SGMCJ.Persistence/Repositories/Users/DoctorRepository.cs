@@ -62,5 +62,10 @@ namespace SGMCJ.Persistence.Repositories.Users
         {
             throw new NotImplementedException();
         }
+
+        public Task GetByEmailAsync(string email)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
