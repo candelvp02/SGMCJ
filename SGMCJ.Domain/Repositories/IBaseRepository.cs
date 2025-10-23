@@ -1,5 +1,4 @@
-﻿using SGMCJ.Domain.Entities.Insurance;
-using SGMCJ.Domain.Entities.Users;
+﻿using SGMCJ.Domain.Entities.Users;
 using System.Linq.Expressions;
 
 namespace SGMCJ.Domain.Repositories

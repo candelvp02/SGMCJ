@@ -12,14 +12,15 @@
         public DateTime DateOfVisit { get; set; }
         public DateTime CreatedAt { get; set; }
     }
-
     public class CreateMedicalRecordDto
     {
         public int PatientId { get; set; }
         public int DoctorId { get; set; }
+        public int? AppointmentId { get; set; }
         public string Diagnosis { get; set; } = string.Empty;
         public string Treatment { get; set; } = string.Empty;
-        public DateTime DateOfVisit { get; set; }
+        public string? Notes { get; set; }
+        public DateTime RecordDate { get; set; }
     }
 
     public class UpdateMedicalRecordDto
@@ -27,6 +28,6 @@
         public int RecordId { get; set; }
         public string Diagnosis { get; set; } = string.Empty;
         public string Treatment { get; set; } = string.Empty;
-        public DateTime DateOfVisit { get; set; }
+        public string? Notes { get; set; }
     }
 }

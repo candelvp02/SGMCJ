@@ -17,5 +17,6 @@ namespace SGMCJ.Domain.Repositories.Users
         Task<Doctor?> GetByIdWithDetailsAsync(int doctorId);
         Task<IEnumerable<Doctor>> GetAllWithDetailsAsync();
         Task<Doctor?> GetByIdWithAppointmentsAsync(int doctorId);
+        Task GetByEmailAsync(string email);
     }
 }

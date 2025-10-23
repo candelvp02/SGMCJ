@@ -18,5 +18,6 @@ namespace SGMCJ.Domain.Repositories.Users
         Task<Patient?> GetByIdWithAppointmentsAsync(int patientId);
         Task<Patient?> GetByIdWithMedicalRecordsAsync(int patientId);
         Task<Patient?> GetByIdentificationNumberAsync(string identificationNumber);
+        Task GetByIdWithDetailsAsync(object id);
     }
 }

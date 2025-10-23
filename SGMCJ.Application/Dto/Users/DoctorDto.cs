@@ -31,7 +31,6 @@ namespace SGMCJ.Application.Dto.Users
         public string? ClinicAddress { get; set; }
         public DateOnly LicenseExpirationDate { get; set; }
     }
-
     public class UpdateDoctorDto
     {
         public int DoctorId { get; set; }
@@ -42,7 +41,6 @@ namespace SGMCJ.Application.Dto.Users
         public decimal? ConsultationFee { get; set; }
         public string? ClinicAddress { get; set; }
         public short? AvailabilityMode { get; set; }
-
         public DateOnly LicenseExpirationDate { get; set; }
     }
 }

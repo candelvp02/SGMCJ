@@ -7,9 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Notification\Email\" />
-    <Folder Include="Notification\Sms\" />
-    <Folder Include="Notification\Push\" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SGMCJ.Application\SGMCJ.Application.csproj" />
+    <ProjectReference Include="..\SGMCJ.Domain\SGMCJ.Domain.csproj" />
+    <ProjectReference Include="..\SGMCJ.Persistence\SGMCJ.Persistence.csproj" />
   </ItemGroup>
 
 </Project>
