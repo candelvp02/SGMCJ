@@ -9,18 +9,13 @@ using SGMCJ.Domain.Entities.Users;
 
 namespace SGMCJ.Application.Services
 {
-    public class UserService : IUserService
-    {
-        private readonly IUserRepository _repository;
-        private readonly ILogger<UserService> _logger;
-
-        public UserService(
+    public class UserService(
             IUserRepository repository,
-            ILogger<UserService> logger )
-        {
-            _repository = repository;
-            _logger = logger;
-        }
+            ILogger<UserService> logger
+        ) : IUserService
+    {
+        private readonly IUserRepository _repository = repository;
+        private readonly ILogger<UserService> _logger = logger;
 
         //autenticacion rf3.1.1
         public async Task<OperationResult<UserDto>> AuthenticateAsync(LoginDto dto)
@@ -81,7 +76,7 @@ namespace SGMCJ.Application.Services
                     return result;
 
                 //validar formato email
-                if(!IsValidEmail(dto.Email))
+                if (!IsValidEmail(dto.Email))
                 {
                     result.Exitoso = false;
                     result.Mensaje = "Formato de email invalido";
@@ -100,11 +95,10 @@ namespace SGMCJ.Application.Services
                 //validar password min 8 caracteres req. de seg.
                 if (!IsValidPassword(dto.Password))
                 {
-                    result.Exitoso= false;
+                    result.Exitoso = false;
                     result.Mensaje = "La contrasena debe tener al menos 8 caracteres, una mayuscula, una minuscula y un numero";
                     return result;
                 }
-
                 // crear usuario
                 var user = new User
                 {
@@ -376,25 +370,6 @@ namespace SGMCJ.Application.Services
             }
             return result;
         }
-
-        //public async Task<OperationResult<List<UserDto>>> GetActiveUserAsync()
-        //{
-        //    var result = new OperationResult<List<UserDto>>();
-        //    try
-        //    {
-        //        var users = await _repository.GetActiveUsersAsync();
-        //        result.Datos = users.Select(MapToDto).ToList();
-        //        result.Exitoso = true;
-        //        result.Mensaje = "Usuarios activos obetenidos correctamente";
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError(ex, "Error al obtener usuarios activos");
-        //        result.Exitoso = false;
-        //        result.Mensaje = "Error al obtener usuarios activos";
-        //    }
-        //    return result;
-        //}
         public async Task<OperationResult<List<UserDto>>> GetActiveUsersAsync()
         {
             var result = new OperationResult<List<UserDto>>();
@@ -500,7 +475,7 @@ namespace SGMCJ.Application.Services
         }
 
         // metodos privados de validacion
-        private bool ValidateRegistrationData(RegisterUserDto dto, OperationResult result)
+        private static bool ValidateRegistrationData(RegisterUserDto dto, OperationResult result)
         {
             if (dto == null)
             {
@@ -532,13 +507,11 @@ namespace SGMCJ.Application.Services
 
             return true;
         }
-
-        private bool IsValidEmail (string email)
+        private static bool IsValidEmail(string email)
         {
             return Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$");
         }
-
-        private bool IsValidPassword(string password)
+        private static bool IsValidPassword(string password)
         {
             // min 8 caracteres 1 mayuscula 1 minuscula 1 numero
             return !string.IsNullOrWhiteSpace(password) &&

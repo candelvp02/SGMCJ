@@ -10,7 +10,7 @@ namespace SGMCJ.Persistence.Repositories.Users
     {
         public PatientRepository(HealtSyncContext context) : base(context) { }
 
-        public new async Task<Patient?> GetByIdAsync(int patientId)
+        public override async Task<Patient?> GetByIdAsync(int patientId) 
             => await _dbSet.FindAsync(patientId);
 
         public async Task<Patient?> GetByIdWithDetailsAsync(int patientId)
@@ -64,13 +64,13 @@ namespace SGMCJ.Persistence.Repositories.Users
         public async Task<bool> ExistsAsync(int patientId)
             => await _dbSet.AnyAsync(p => p.PatientId == patientId);
 
-        public new async Task UpdateAsync(Patient patient)
+        public override async Task UpdateAsync(Patient patient) 
         {
             _context.Entry(patient).State = EntityState.Modified;
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteAsync(int patientId)
+        public override async Task DeleteAsync(int patientId) 
         {
             var patient = await GetByIdAsync(patientId);
             if (patient != null)

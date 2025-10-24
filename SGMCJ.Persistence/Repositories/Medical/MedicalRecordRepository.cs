@@ -10,7 +10,7 @@ namespace SGMCJ.Persistence.Repositories.Medical
     {
         public MedicalRecordRepository(HealtSyncContext context) : base(context) { }
 
-        public async Task<MedicalRecord?> GetByIdAsync(int id)
+        public override async Task<MedicalRecord?> GetByIdAsync(int id)
             => await _dbSet.FindAsync(id);
 
         public Task<MedicalRecord?> GetByIdAsync(string? id)
@@ -42,6 +42,17 @@ namespace SGMCJ.Persistence.Repositories.Medical
                 .Include(m => m.Doctor)
                 .Where(m => m.PatientId == patientId)
                 .ToListAsync();
+        }
+        public override async Task UpdateAsync(MedicalRecord record)
+        {
+            _context.Entry(record).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+        }
+        async Task<MedicalRecord> IMedicalRecordRepository.UpdateAsync(MedicalRecord record)
+        {
+            _context.Entry(record).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+            return record;
         }
     }
 }

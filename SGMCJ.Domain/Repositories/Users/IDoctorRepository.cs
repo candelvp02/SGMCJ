@@ -14,9 +14,9 @@ namespace SGMCJ.Application.Interfaces
         Task<Doctor?> GetByEmailAsync(string email);
         Task<bool> ExistsByLicenseNumberAsync(string licenseNumber);
         Task<IEnumerable<Doctor>> GetAllWithDetailsAsync();
-        Task<Doctor> GetByIdWithDetailsAsync(int id);
+        Task<Doctor?> GetByIdWithDetailsAsync(int id);
         Task<IEnumerable<Doctor>> GetBySpecialtyIdAsync(short specialtyId);
         Task<IEnumerable<Doctor>> GetActiveDoctorsAsync();
-        Task<Doctor> GetByLicenseNumberAsync(string licenseNumber);
+        Task<Doctor?> GetByLicenseNumberAsync(string licenseNumber);
     }
 }

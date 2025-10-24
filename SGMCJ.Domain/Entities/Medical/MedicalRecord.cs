@@ -26,6 +26,5 @@ namespace SGMCJ.Domain.Entities.Medical
         public virtual Doctor? Doctor { get; set; }
 
         public virtual Patient? Patient { get; set; }
-        public object? Id { get; set; }
     }
 }

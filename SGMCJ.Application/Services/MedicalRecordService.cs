@@ -196,7 +196,7 @@ namespace SGMCJ.Application.Services
 
         private static MedicalRecordDto MapToDto(MedicalRecord r) => new()
         {
-            Id = r.Id,
+            RecordId = r.RecordId,
             PatientId = r.PatientId,
             DoctorId = r.DoctorId,
             Diagnosis = r.Diagnosis,

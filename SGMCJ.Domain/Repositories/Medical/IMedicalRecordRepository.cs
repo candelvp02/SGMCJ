@@ -12,6 +12,6 @@ namespace SGMCJ.Domain.Repositories.Medical
         // Consultas
         Task<IEnumerable<MedicalRecord>> GetByPatientIdAsync(int patientId);
         Task<IEnumerable<MedicalRecord>> GetByDoctorIdAsync(int doctorId);
-        Task<MedicalRecord> GetByIdAsync(string? id);
+        Task<MedicalRecord?> GetByIdAsync(string? id);
     }
 }
