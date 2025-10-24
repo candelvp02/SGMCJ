@@ -19,14 +19,17 @@ namespace SGMCJ.Persistence.Repositories.Medical
         public async Task<bool> ExistsAsync(short availabilityModeId)
             => await _dbSet.AnyAsync(a => a.AvailabilityModeId == availabilityModeId);
 
-        public Task<AvailabilityMode?> GetByIdAsync(short availabilityModeId)
-        {
-            throw new NotImplementedException();
-        }
+        public async Task<AvailabilityMode?> GetByIdAsync(short availabilityModeId)
+    => await _dbSet.FirstOrDefaultAsync(a => a.AvailabilityModeId == availabilityModeId);
 
-        public Task DeleteAsync(short availabilityModeId)
+        public async Task DeleteAsync(short availabilityModeId)
         {
-            throw new NotImplementedException();
+            var entity = await GetByIdAsync(availabilityModeId);
+            if (entity != null)
+            {
+                _dbSet.Remove(entity);
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }

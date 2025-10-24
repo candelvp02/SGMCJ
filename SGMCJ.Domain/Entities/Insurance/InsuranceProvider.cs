@@ -1,6 +1,4 @@
 ﻿using SGMCJ.Domain.Entities.Users;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SGMCJ.Domain.Entities.Insurance
@@ -51,5 +49,6 @@ namespace SGMCJ.Domain.Entities.Insurance
         public virtual NetworkType? NetworkType { get; set; }
 
         public virtual ICollection<Patient> Patients { get; set; } = new List<Patient>();
+        public string? ContactPhone { get; set; }
     }
 }

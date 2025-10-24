@@ -22,7 +22,7 @@ namespace SGMCJ.Persistence.Repositories.Appointments
         public async Task<IEnumerable<Appointment>> GetByDateRangeAsync(DateTime startDate, DateTime endDate)
             => await _dbSet.Where(a => a.AppointmentDate >= startDate && a.AppointmentDate <= endDate).ToListAsync();
 
-        public async Task<IEnumerable<Appointment>> GetUpcomingAppointmentAsync(int patientId)
+        public async Task<IEnumerable<Appointment>> GetUpcomingAppointmentsAsync(int patientId)
         {
             var now = DateTime.Now;
             return await _dbSet
@@ -37,24 +37,19 @@ namespace SGMCJ.Persistence.Repositories.Appointments
         public async Task<Appointment?> GetByIdWithDetailsAsync(int appointmentId)
         {
             return await _dbSet
-                .Include(a => a.PatientId)
-                .Include(a => a.DoctorId)
-                .Include(a => a.StatusId)
                 .FirstOrDefaultAsync(a => a.AppointmentId == appointmentId);
         }
 
         public async Task<IEnumerable<Appointment>> GetAllWithDetailsAsync()
         {
-            return await _dbSet
-                .Include(a => a.PatientId)
-                .Include(a => a.DoctorId)
-                .Include(a => a.StatusId)
-                .ToListAsync();
+            return await _dbSet.ToListAsync();
         }
 
-        public Task<bool> ExistsInTimeSlotAsync(int doctorId, DateTime appointmentDate)
+        public async Task<bool> ExistsInTimeSlotAsync(int doctorId, DateTime appointmentDate)
         {
-            throw new NotImplementedException();
+            return await _dbSet.AnyAsync(a =>
+                a.DoctorId == doctorId &&
+                a.AppointmentDate == appointmentDate);
         }
     }
 }

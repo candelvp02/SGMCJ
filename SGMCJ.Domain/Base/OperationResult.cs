@@ -6,7 +6,6 @@
         public string Mensaje { get; set; } = string.Empty;
         public object? Datos { get; set; }
         public List<string> Errores { get; set; } = [];
-
         public static OperationResult Exito(string mensaje = "Operación realizada con éxito.", object? datos = null) =>
             new() { Exitoso = true, Mensaje = mensaje, Datos = datos };
 

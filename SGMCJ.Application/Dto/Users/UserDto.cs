@@ -5,6 +5,8 @@ namespace SGMCJ.Application.Dto.Users
 {
     public class UserDto : PersonBaseDto
     {
+        public string? PhoneNumber;
+
         public int UserId { get; set; }
         public string Email { get; set; } = string.Empty;
         public int? RoleId { get; set; }

@@ -1,22 +1,22 @@
 ﻿using SGMCJ.Domain.Entities.Users;
+using System.Linq.Expressions;
 
-namespace SGMCJ.Domain.Repositories.Users
+namespace SGMCJ.Application.Interfaces
 {
     public interface IDoctorRepository
     {
-        Task<Doctor?> GetByIdAsync(int doctorId);
+        Task<Doctor?> GetByIdAsync(int id);
         Task<IEnumerable<Doctor>> GetAllAsync();
+        Task<IEnumerable<Doctor>> FindAsync(Expression<Func<Doctor, bool>> predicate);
         Task<Doctor> AddAsync(Doctor doctor);
-        Task UpdateAsync(Doctor doctor);
-        Task DeleteAsync(int doctorId);
-        Task<IEnumerable<Doctor>> GetActiveDoctorsAsync();
-        Task<IEnumerable<Doctor>> GetBySpecialtyIdAsync(short specialtyId);
-        Task<Doctor?> GetByLicenseNumberAsync(string licenseNumber);
-        Task<bool> ExistsAsync(int doctorId);
+        Task<Doctor> UpdateAsync(Doctor doctor);
+        Task DeleteAsync(int id);
+        Task<Doctor?> GetByEmailAsync(string email);
         Task<bool> ExistsByLicenseNumberAsync(string licenseNumber);
-        Task<Doctor?> GetByIdWithDetailsAsync(int doctorId);
         Task<IEnumerable<Doctor>> GetAllWithDetailsAsync();
-        Task<Doctor?> GetByIdWithAppointmentsAsync(int doctorId);
-        Task GetByEmailAsync(string email);
+        Task<Doctor> GetByIdWithDetailsAsync(int id);
+        Task<IEnumerable<Doctor>> GetBySpecialtyIdAsync(short specialtyId);
+        Task<IEnumerable<Doctor>> GetActiveDoctorsAsync();
+        Task<Doctor> GetByLicenseNumberAsync(string licenseNumber);
     }
 }

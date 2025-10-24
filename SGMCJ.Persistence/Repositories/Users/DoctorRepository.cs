@@ -1,71 +1,70 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using SGMCJ.Application.Interfaces;
 using SGMCJ.Domain.Entities.Users;
-using SGMCJ.Domain.Repositories.Users;
-using SGMCJ.Persistence.Base;
 using SGMCJ.Persistence.Context;
+using System.Linq.Expressions;
 
 namespace SGMCJ.Persistence.Repositories.Users
 {
-    public class DoctorRepository : BaseRepository<Doctor>, IDoctorRepository
+    public class DoctorRepository : IDoctorRepository
     {
-        public DoctorRepository(HealtSyncContext context) : base(context) { }
+        private readonly HealtSyncContext _context;
 
-        public async Task<Doctor?> GetByIdWithDetailsAsync(int doctorId)
+        public DoctorRepository(HealtSyncContext context)
         {
-            return await _dbSet
-                .Include(d => d.DoctorNavigation)
-                .Include(d => d.Specialty)
-                .Include(d => d.AvailabilityMode)
-                .FirstOrDefaultAsync(d => d.DoctorId == doctorId);
+            _context = context;
         }
 
-        public async Task<IEnumerable<Doctor>> GetAllWithDetailsAsync()
+        public async Task<Doctor?> GetByIdAsync(int id)
         {
-            return await _dbSet
-                .Include(d => d.DoctorNavigation)
-                .Include(d => d.Specialty)
-                .Include(d => d.AvailabilityMode)
+            return await _context.Doctors.FindAsync(id);
+        }
+
+        public async Task<IEnumerable<Doctor>> GetAllAsync()
+        {
+            return await _context.Doctors
+                .Where(d => d.IsActive)
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<Doctor>> GetActiveDoctorsAsync()
+        public async Task<IEnumerable<Doctor>> FindAsync(Expression<Func<Doctor, bool>> predicate)
         {
-            return await _dbSet.Where(d => d.IsActive).ToListAsync();
+            return await _context.Doctors
+                .Where(predicate)
+                .ToListAsync();
         }
 
-        public async Task<IEnumerable<Doctor>> GetBySpecialtyIdAsync(short specialtyId)
+        public async Task<Doctor> AddAsync(Doctor doctor)
         {
-            return await _dbSet.Where(d => d.SpecialtyId == specialtyId).ToListAsync();
+            _context.Doctors.Add(doctor);
+            await _context.SaveChangesAsync();
+            return doctor;
         }
 
-        public async Task<Doctor?> GetByLicenseNumberAsync(string licenseNumber)
+        public async Task<Doctor> UpdateAsync(Doctor doctor)
         {
-            return await _dbSet.FirstOrDefaultAsync(d => d.LicenseNumber == licenseNumber);
+            _context.Doctors.Update(doctor);
+            await _context.SaveChangesAsync();
+            return doctor;
         }
 
-        public async Task<bool> ExistsByLicenseNumberAsync(string licenseNumber)
+        public async Task DeleteAsync(int id)
         {
-            return await _dbSet.AnyAsync(d => d.LicenseNumber == licenseNumber);
+            var doctor = await _context.Doctors.FindAsync(id);
+            if (doctor != null)
+            {
+                _context.Doctors.Remove(doctor);
+                await _context.SaveChangesAsync();
+            }
         }
 
-        Task IDoctorRepository.DeleteAsync(int doctorId)
+        public async Task<Doctor?> GetByEmailAsync(string email)
         {
-            return DeleteAsync(doctorId);
-        }
+            if (string.IsNullOrEmpty(email))
+                return null;
 
-        public Task<bool> ExistsAsync(int doctorId)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<Doctor?> GetByIdWithAppointmentsAsync(int doctorId)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task GetByEmailAsync(string email)
-        {
-            throw new NotImplementedException();
+            return await _context.Doctors
+                .FirstOrDefaultAsync(d => d.Email != null && d.Email.Equals(email));
         }
     }
 }
