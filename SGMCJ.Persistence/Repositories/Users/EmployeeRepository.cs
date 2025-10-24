@@ -10,29 +10,26 @@ namespace SGMCJ.Persistence.Repositories.Users
     {
         public EmployeeRepository(HealtSyncContext context) : base(context) { }
 
-        public Task<bool> ExistsAsync(int employeeId)
-        {
-            throw new NotImplementedException();
-        }
+        public new async Task<Employee?> GetByIdAsync(int employeeId)
+            => await _dbSet.FindAsync(employeeId);
 
         public async Task<IEnumerable<Employee>> GetActiveEmployeesAsync()
-        {
-            return await _dbSet.Where(e => e.IsActive).ToListAsync();
-        }
+            => await _dbSet.Where(e => e.IsActive).ToListAsync();
 
         public async Task<IEnumerable<Employee>> GetByJobTitleAsync(string jobTitle)
-        {
-            return await _dbSet.Where(e => e.JobTitle == jobTitle && e.IsActive).ToListAsync();
-        }
+            => await _dbSet.Where(e => e.JobTitle == jobTitle && e.IsActive).ToListAsync();
 
-        public async Task<Employee?> GetByIdAsync(int employeeId)
-        {
-            return await _dbSet.FindAsync(employeeId).ConfigureAwait(false);
-        }
+        public async Task<bool> ExistsAsync(int employeeId)
+            => await _dbSet.AnyAsync(e => e.EmployeeId == employeeId);
 
-        Task IEmployeeRepository.DeleteAsync(int employeeId)
+        public async Task DeleteAsync(int employeeId)
         {
-            return DeleteAsync(employeeId);
+            var entity = await GetByIdAsync(employeeId);
+            if (entity != null)
+            {
+                _dbSet.Remove(entity);
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }

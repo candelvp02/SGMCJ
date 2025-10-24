@@ -10,6 +10,9 @@ namespace SGMCJ.Persistence.Repositories.Users
     {
         public PatientRepository(HealtSyncContext context) : base(context) { }
 
+        public new async Task<Patient?> GetByIdAsync(int patientId)
+            => await _dbSet.FindAsync(patientId);
+
         public async Task<Patient?> GetByIdWithDetailsAsync(int patientId)
         {
             return await _dbSet
@@ -27,25 +30,18 @@ namespace SGMCJ.Persistence.Repositories.Users
         }
 
         public async Task<IEnumerable<Patient>> GetActivePatientsAsync()
-        {
-            return await _dbSet.Where(p => p.IsActive).ToListAsync();
-        }
+            => await _dbSet.Where(p => p.IsActive).ToListAsync();
 
         public async Task<IEnumerable<Patient>> GetByInsuranceProviderIdAsync(int insuranceProviderId)
-        {
-            return await _dbSet.Where(p => p.InsuranceProviderId == insuranceProviderId).ToListAsync();
-        }
+            => await _dbSet.Where(p => p.InsuranceProviderId == insuranceProviderId).ToListAsync();
 
         public async Task<Patient?> GetByPhoneNumberAsync(string phoneNumber)
-        {
-            return await _dbSet.FirstOrDefaultAsync(p => p.PhoneNumber == phoneNumber);
-        }
+            => await _dbSet.FirstOrDefaultAsync(p => p.PhoneNumber == phoneNumber);
 
         public async Task<Patient?> GetByIdWithAppointmentsAsync(int patientId)
         {
             return await _dbSet
                 .Include(p => p.Appointments)
-                    .ThenInclude(a => a.DoctorId)
                 .FirstOrDefaultAsync(p => p.PatientId == patientId);
         }
 
@@ -53,7 +49,7 @@ namespace SGMCJ.Persistence.Repositories.Users
         {
             return await _dbSet
                 .Include(p => p.MedicalRecords)
-                    .ThenInclude(mr => mr.Doctor)
+                .ThenInclude(mr => mr.Doctor)
                 .FirstOrDefaultAsync(p => p.PatientId == patientId);
         }
 
@@ -61,25 +57,35 @@ namespace SGMCJ.Persistence.Repositories.Users
         {
             return await _dbSet
                 .Include(p => p.PatientNavigation)
-                .FirstOrDefaultAsync(p => p.PatientNavigation.IdentificationNumber == identificationNumber);
+                .FirstOrDefaultAsync(p => p.PatientNavigation != null &&
+                                         p.PatientNavigation.IdentificationNumber == identificationNumber);
         }
 
         public async Task<bool> ExistsAsync(int patientId)
-        {
-            return await _dbSet.AnyAsync(p => p.PatientId == patientId);
-        }
-        public Task UpdateAsync(Patient patient)
+            => await _dbSet.AnyAsync(p => p.PatientId == patientId);
+
+        public new async Task UpdateAsync(Patient patient)
         {
             _context.Entry(patient).State = EntityState.Modified;
-            return Task.CompletedTask;
+            await _context.SaveChangesAsync();
         }
+
         public async Task DeleteAsync(int patientId)
         {
-            var patientToDelete = await _dbSet.FindAsync(patientId);
-            if (patientToDelete != null)
+            var patient = await GetByIdAsync(patientId);
+            if (patient != null)
             {
-                _dbSet.Remove(patientToDelete);
+                _dbSet.Remove(patient);
+                await _context.SaveChangesAsync();
             }
+        }
+
+        public Task GetByIdWithDetailsAsync(object id)
+        {
+            if (id is int patientId)
+                return GetByIdWithDetailsAsync(patientId);
+
+            return Task.CompletedTask;
         }
     }
 }

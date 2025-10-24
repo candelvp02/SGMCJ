@@ -9,7 +9,6 @@ namespace SGMCJ.Domain.Repositories.Users
         Task<List<UserDto>> ListByRoleAsync(int roleId);
         Task<UserDto?> GetByIdWithDetailsAsync(int userId);
         Task<UserDto?> GetByEmailAsync(string email);
-        //Task<UserDto?> GetByIdentificationNumberAsync(string identificationNumber);
         Task<bool> UpdateUserStatusAsync(int userId, bool isActive);
         Task<bool> UpdateUserRoleAsync(int userId, int roleId);
     }

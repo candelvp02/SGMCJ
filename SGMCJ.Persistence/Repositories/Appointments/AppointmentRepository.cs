@@ -34,22 +34,19 @@ namespace SGMCJ.Persistence.Repositories.Appointments
         public async Task<bool> ExistsAsync(int appointmentId)
             => await _dbSet.AnyAsync(a => a.AppointmentId == appointmentId);
 
+        public async Task<Appointment?> GetByIdAsync(int appointmentId)
+            => await _dbSet.FindAsync(appointmentId);
+
         public async Task<Appointment?> GetByIdWithDetailsAsync(int appointmentId)
-        {
-            return await _dbSet
-                .FirstOrDefaultAsync(a => a.AppointmentId == appointmentId);
-        }
+            => await _dbSet.FirstOrDefaultAsync(a => a.AppointmentId == appointmentId);
 
         public async Task<IEnumerable<Appointment>> GetAllWithDetailsAsync()
-        {
-            return await _dbSet.ToListAsync();
-        }
+            => await _dbSet.ToListAsync();
+
+        public async Task<IEnumerable<Appointment>> GetByPatientIdWithDetailsAsync(int patientId)
+            => await _dbSet.Where(a => a.PatientId == patientId).ToListAsync();
 
         public async Task<bool> ExistsInTimeSlotAsync(int doctorId, DateTime appointmentDate)
-        {
-            return await _dbSet.AnyAsync(a =>
-                a.DoctorId == doctorId &&
-                a.AppointmentDate == appointmentDate);
-        }
+            => await _dbSet.AnyAsync(a => a.DoctorId == doctorId && a.AppointmentDate == appointmentDate);
     }
 }
