@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
-using SGMCJ.Persistence.Context;
+using SGMCJ.Application.Interfaces.Service;
 using SGMCJ.Infrastructure.Dependencies;
+using SGMCJ.Infrastructure.Services;
+using SGMCJ.Persistence.Context;
 
 var builder = WebApplication.CreateBuilder(args);
 
