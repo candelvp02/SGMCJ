@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using SGMCJ.Application.Interfaces;
 using SGMCJ.Application.Interfaces.Service;
 using SGMCJ.Application.Services;
 using SGMCJ.Domain.Repositories.Users;

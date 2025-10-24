@@ -19,7 +19,7 @@
         public string NetworkTypeName { get; set; } = string.Empty;
         public decimal? MaxCoverageAmount { get; set; }
         public bool IsActive { get; set; }
-        public object Id { get; internal set; }
+        public object? Id { get; internal set; }
     }
     public class CreateInsuranceProviderDto
     {

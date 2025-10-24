@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using SGMCJ.Application.Interfaces;
 using SGMCJ.Domain.Repositories.Appointments;
 using SGMCJ.Domain.Repositories.Insurance;
 using SGMCJ.Domain.Repositories.Medical;

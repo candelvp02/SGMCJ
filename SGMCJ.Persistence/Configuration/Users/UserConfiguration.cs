@@ -1,8 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using SGMCJ.Domain.Entities.Users;
-using System;
-using System.Collections.Generic;
 
 namespace SGMCJ.Domain.Configuration.Users
 {
@@ -19,23 +17,29 @@ namespace SGMCJ.Domain.Configuration.Users
             entity.Property(e => e.UserId)
                 .ValueGeneratedOnAdd()
                 .HasColumnName("UserID");
+
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
-                .HasAnnotation("Relational:DefaultConstraintName", "DF__Users__CreatedAt__412EB0B6")
                 .HasColumnType("datetime");
+
             entity.Property(e => e.Email)
                 .IsRequired()
                 .HasMaxLength(255)
                 .IsUnicode(false);
-            entity.Property(e => e.IsActive).HasAnnotation("Relational:DefaultConstraintName", "DF_Users_IsActive");
-            entity.Property(e => e.Password)
+
+            entity.Property(e => e.IsActive)
+                .HasDefaultValue(false);
+
+            entity.Property(e => e.PasswordHash)
                 .IsRequired()
                 .HasMaxLength(255)
-                .IsUnicode(false);
+                .IsUnicode(false)
+                .HasColumnName("Password");
+
             entity.Property(e => e.RoleId).HasColumnName("RoleID");
+
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("(getdate())")
-                .HasAnnotation("Relational:DefaultConstraintName", "DF__Users__UpdatedAt__4222D4EF")
                 .HasColumnType("datetime");
 
             entity.HasOne(d => d.Role).WithMany(p => p.Users)

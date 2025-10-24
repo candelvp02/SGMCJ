@@ -10,8 +10,14 @@ namespace SGMCJ.Persistence.Repositories.Medical
     {
         public SpecialtyRepository(HealtSyncContext context) : base(context) { }
 
+        public async Task<Specialty?> GetByIdAsync(short specialtyId)
+            => await _dbSet.FirstOrDefaultAsync(s => s.SpecialtyId == specialtyId);
+
         public async Task<IEnumerable<Specialty>> GetActiveSpecialtiesAsync()
             => await _dbSet.Where(s => s.IsActive).ToListAsync();
+
+        public async Task<IEnumerable<Specialty>> GetActiveAsync()
+            => await GetActiveSpecialtiesAsync();
 
         public async Task<Specialty?> GetNameAsync(string specialtyName)
             => await _dbSet.FirstOrDefaultAsync(s => s.SpecialtyName == specialtyName);
@@ -22,14 +28,20 @@ namespace SGMCJ.Persistence.Repositories.Medical
         public async Task<bool> ExistsByNameAsync(string specialtyName)
             => await _dbSet.AnyAsync(s => s.SpecialtyName == specialtyName);
 
-        public Task<Specialty?> GetByIdAsync(short specialtyId)
+        public async Task DeleteAsync(short specialtyId)
         {
-            throw new NotImplementedException();
+            var entity = await GetByIdAsync(specialtyId);
+            if (entity != null)
+            {
+                _dbSet.Remove(entity);
+                await _context.SaveChangesAsync();
+            }
         }
 
-        public Task DeleteAsync(short specialtyId)
+        public async Task DeleteAsync(Specialty existing)
         {
-            throw new NotImplementedException();
+            _dbSet.Remove(existing);
+            await _context.SaveChangesAsync();
         }
     }
 }

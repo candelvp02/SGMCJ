@@ -1,5 +1,4 @@
-﻿
-using SGMCJ.Domain.Entities.Appointments;
+﻿using SGMCJ.Domain.Entities.Appointments;
 
 namespace SGMCJ.Domain.Repositories.Appointments
 {

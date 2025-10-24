@@ -1,9 +1,11 @@
 ﻿using Microsoft.Extensions.Logging;
+using SGMCJ.Application.Dto.Appointments;
 using SGMCJ.Application.Dto.Users;
 using SGMCJ.Application.Interfaces;
 using SGMCJ.Application.Interfaces.Service;
 using SGMCJ.Domain.Base;
 using SGMCJ.Domain.Entities.Users;
+using SGMCJ.Domain.Repositories.Appointments;
 using SGMCJ.Domain.Repositories.Users;
 using System.Text.RegularExpressions;
 
@@ -12,45 +14,75 @@ namespace SGMCJ.Application.Services
     public class DoctorService : IDoctorService
     {
         private readonly IDoctorRepository _repository;
+        private readonly IAppointmentRepository _appointmentRepository;
         private readonly ILogger<DoctorService> _logger;
 
         public DoctorService(
             IDoctorRepository repository,
+            IAppointmentRepository appointmentRepository,
             ILogger<DoctorService> logger)
         {
             _repository = repository;
+            _appointmentRepository = appointmentRepository;
             _logger = logger;
         }
 
-        // crear doctor
-        public async Task<OperationResult<DoctorDto>> CreateAsync(DoctorDto doctorDto)
+        public async Task<OperationResult<DoctorDto>> CreateAsync(RegisterDoctorDto doctorDto)
         {
             var result = new OperationResult<DoctorDto>();
 
             try
             {
-                // validar datos requeridos
-                if (!ValidateRequiredFields(doctorDto, result))
+                if (doctorDto == null)
+                {
+                    result.Exitoso = false;
+                    result.Mensaje = "Datos del doctor son requeridos";
                     return result;
+                }
 
-                // validar formatos
-                if (!ValidateFormats(doctorDto, result))
+                if (string.IsNullOrWhiteSpace(doctorDto.LicenseNumber))
+                {
+                    result.Exitoso = false;
+                    result.Mensaje = "Numero de licencia es requerido";
                     return result;
+                }
 
-                // validar rangos numericos
-                if (!ValidateRanges(doctorDto, result))
+                if (string.IsNullOrWhiteSpace(doctorDto.PhoneNumber))
+                {
+                    result.Exitoso = false;
+                    result.Mensaje = "Numero de telefono es requerido";
                     return result;
+                }
 
-                //validar unicidad de licencia
+                if (!IsValidPhoneNumber(doctorDto.PhoneNumber))
+                {
+                    result.Exitoso = false;
+                    result.Mensaje = "Numero de telefono invalido debe ser XXX-XXX-XXXX";
+                    return result;
+                }
+
+                if (doctorDto.YearsOfExperience < 0 || doctorDto.YearsOfExperience > 60)
+                {
+                    result.Exitoso = false;
+                    result.Mensaje = "Anos de experiencia invalidos deben estar entre 0 y 60";
+                    return result;
+                }
+
+                if (doctorDto.LicenseExpirationDate <= DateOnly.FromDateTime(DateTime.Now))
+                {
+                    result.Exitoso = false;
+                    result.Mensaje = "La licencia debe estar vigente";
+                    return result;
+                }
+
                 var existeLicencia = await _repository.ExistsByLicenseNumberAsync(doctorDto.LicenseNumber);
                 if (existeLicencia)
                 {
                     result.Exitoso = false;
-                    result.Mensaje = "Número de licencia ya existe";
+                    result.Mensaje = "Numero de licencia ya existe";
                     return result;
                 }
 
-                // crear doctor
                 var doctor = new Doctor
                 {
                     SpecialtyId = doctorDto.SpecialtyId,
@@ -81,7 +113,6 @@ namespace SGMCJ.Application.Services
             return result;
         }
 
-        // actualizar doctor
         public async Task<OperationResult<DoctorDto>> UpdateAsync(UpdateDoctorDto doctorDto)
         {
             var result = new OperationResult<DoctorDto>();
@@ -95,7 +126,6 @@ namespace SGMCJ.Application.Services
                     return result;
                 }
 
-                // verificar q existe
                 var doctor = await _repository.GetByIdAsync(doctorDto.DoctorId);
                 if (doctor == null)
                 {
@@ -104,23 +134,20 @@ namespace SGMCJ.Application.Services
                     return result;
                 }
 
-                // validar telefono
                 if (!IsValidPhoneNumber(doctorDto.PhoneNumber))
                 {
                     result.Exitoso = false;
-                    result.Mensaje = "Número de teléfono inválido debe ser XXX-XXX-XXXX";
+                    result.Mensaje = "Numero de telefono invalido debe ser XXX-XXX-XXXX";
                     return result;
                 }
 
-                // validate years of experience
                 if (doctorDto.YearsOfExperience < 0 || doctorDto.YearsOfExperience > 60)
                 {
                     result.Exitoso = false;
-                    result.Mensaje = "Años de experiencia inválidos deben estar entre 0 y 60";
+                    result.Mensaje = "Anos de experiencia invalidos deben estar entre 0 y 60";
                     return result;
                 }
 
-                // validar licencia vigente
                 if (doctorDto.LicenseExpirationDate < DateOnly.FromDateTime(DateTime.Now))
                 {
                     result.Exitoso = false;
@@ -128,7 +155,6 @@ namespace SGMCJ.Application.Services
                     return result;
                 }
 
-                //actualizar
                 doctor.PhoneNumber = doctorDto.PhoneNumber;
                 doctor.YearsOfExperience = doctorDto.YearsOfExperience;
                 doctor.Education = doctorDto.Education;
@@ -154,14 +180,42 @@ namespace SGMCJ.Application.Services
             return result;
         }
 
-        // consultas
+        public async Task<OperationResult> DeleteAsync(int id)
+        {
+            var result = new OperationResult();
+            try
+            {
+                var doctor = await _repository.GetByIdAsync(id);
+                if (doctor == null)
+                {
+                    result.Exitoso = false;
+                    result.Mensaje = "Doctor no encontrado";
+                    return result;
+                }
+
+                doctor.IsActive = false;
+                doctor.UpdatedAt = DateTime.Now;
+                await _repository.UpdateAsync(doctor);
+
+                result.Exitoso = true;
+                result.Mensaje = "Doctor desactivado correctamente";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al eliminar doctor {Id}", id);
+                result.Exitoso = false;
+                result.Mensaje = "Error al eliminar doctor";
+            }
+            return result;
+        }
+
         public async Task<OperationResult<List<DoctorDto>>> GetAllAsync()
         {
             var result = new OperationResult<List<DoctorDto>>();
             try
             {
-                var doctor = await _repository.GetAllAsync();
-                result.Datos = doctor.Select(d => MapToDto(d)).ToList();
+                var doctors = await _repository.GetAllAsync();
+                result.Datos = doctors.Select(MapToDto).ToList();
                 result.Exitoso = true;
                 result.Mensaje = "Doctores obtenidos correctamente";
             }
@@ -179,8 +233,8 @@ namespace SGMCJ.Application.Services
             var result = new OperationResult<List<DoctorDto>>();
             try
             {
-                var doctor = await _repository.GetAllWithDetailsAsync();
-                result.Datos = doctor.Select(MapToDtoWithDetails).ToList();
+                var doctors = await _repository.GetAllWithDetailsAsync();
+                result.Datos = doctors.Select(MapToDtoWithDetails).ToList();
                 result.Exitoso = true;
                 result.Mensaje = "Doctores con detalles obtenidos correctamente";
             }
@@ -245,28 +299,29 @@ namespace SGMCJ.Application.Services
             return result;
         }
 
-        public async Task<OperationResult<DoctorDto>> GetByIdWithAppointmentsAsync(int id)
+        public async Task<OperationResult<List<AppointmentDto>>> GetAppointmentsByDoctorIdAsync(int doctorId)
         {
-            var result = new OperationResult<DoctorDto>();
+            var result = new OperationResult<List<AppointmentDto>>();
             try
             {
-                var doctor = await _repository.GetByIdWithDetailsAsync(id);
-                if (doctor == null)
+                var appointments = await _appointmentRepository.GetByDoctorIdAsync(doctorId);
+                result.Datos = appointments.Select(a => new AppointmentDto
                 {
-                    result.Exitoso = false;
-                    result.Mensaje = "Doctor no encontrado";
-                    return result;
-                }
-
-                result.Datos = MapToDtoWithDetails(doctor);
+                    AppointmentId = a.AppointmentId,
+                    PatientId = a.PatientId,
+                    DoctorId = a.DoctorId,
+                    AppointmentDate = a.AppointmentDate,
+                    StatusId = a.StatusId,
+                    CreatedAt = a.CreatedAt
+                }).ToList();
                 result.Exitoso = true;
-                result.Mensaje = "Doctor con citas obtenido correctamente";
+                result.Mensaje = "Citas del doctor obtenidas correctamente";
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al obtener doctor con citas {Id}", id);
+                _logger.LogError(ex, "Error al obtener citas del doctor {DoctorId}", doctorId);
                 result.Exitoso = false;
-                result.Mensaje = "Error al obtener doctor con citas";
+                result.Mensaje = "Error al obtener citas del doctor";
             }
             return result;
         }
@@ -324,13 +379,13 @@ namespace SGMCJ.Application.Services
 
                 result.Datos = MapToDto(doctor);
                 result.Exitoso = true;
-                result.Mensaje = "Doctor obtenido correctamente por número de licencia";
+                result.Mensaje = "Doctor obtenido correctamente por numero de licencia";
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al obtener doctor por número de licencia {License}", licenseNumber);
+                _logger.LogError(ex, "Error al obtener doctor por numero de licencia {License}", licenseNumber);
                 result.Exitoso = false;
-                result.Mensaje = "Error al obtener doctor por número de licencia";
+                result.Mensaje = "Error al obtener doctor por numero de licencia";
             }
             return result;
         }
@@ -343,7 +398,7 @@ namespace SGMCJ.Application.Services
                 var exists = await _repository.ExistsByLicenseNumberAsync(licenseNumber);
                 result.Datos = exists;
                 result.Exitoso = true;
-                result.Mensaje = "Verificación completada";
+                result.Mensaje = "Verificacion completada";
             }
             catch (Exception ex)
             {
@@ -354,7 +409,6 @@ namespace SGMCJ.Application.Services
             return result;
         }
 
-        // metodos para EF ENTITIES
         public async Task<OperationResult<Doctor>> CreateEntityAsync(Doctor doctor)
         {
             var result = new OperationResult<Doctor>();
@@ -407,96 +461,11 @@ namespace SGMCJ.Application.Services
             return result;
         }
 
-        // metodos privados de validacion
-        private bool ValidateRequiredFields(DoctorDto dto, OperationResult result)
-        {
-            if (dto == null)
-            {
-                result.Exitoso = false;
-                result.Mensaje = "Datos del doctor son requeridos";
-                return false;
-            }
-
-            if (string.IsNullOrWhiteSpace(dto.LicenseNumber))
-            {
-                result.Exitoso = false;
-                result.Mensaje = "Número de licencia es requerido";
-                return false;
-            }
-
-            if (string.IsNullOrWhiteSpace(dto.PhoneNumber))
-            {
-                result.Exitoso = false;
-                result.Mensaje = "Número de teléfono es requerido";
-                return false;
-            }
-
-            if (string.IsNullOrWhiteSpace(dto.Education))
-            {
-                result.Exitoso = false;
-                result.Mensaje = "Educación es requerida";
-                return false;
-            }
-
-            if (dto.SpecialtyId <= 0)
-            {
-                result.Exitoso = false;
-                result.Mensaje = "Especialidad es requerida";
-                return false;
-            }
-
-            return true;
-        }
-
-        private bool ValidateFormats(DoctorDto dto, OperationResult result)
-        {
-
-            // validar formato telefono
-            if (!IsValidPhoneNumber(dto.PhoneNumber))
-            {
-                result.Exitoso = false;
-                result.Mensaje = "Número de teléfono inválido debe ser XXX-XXX-XXXX";
-                return false;
-            }
-
-            return true;
-        }
-
-        private bool ValidateRanges(DoctorDto dto, OperationResult result)
-        {
-            // validar años de experiencia
-            if (dto.YearsOfExperience < 0 || dto.YearsOfExperience > 60)
-            {
-                result.Exitoso = false;
-                result.Mensaje = "Años de experiencia inválidos deben estar entre 0 y 60";
-                return false;
-            }
-           
-            // licencia vigente
-            if (dto.LicenseExpirationDate <= DateOnly.FromDateTime(DateTime.Now))
-            {
-                result.Exitoso = false;
-                result.Mensaje = "La licencia debe estar vigente";
-                return false;
-            }
-
-            //tarifa de consulta
-            if(dto.ConsultationFee.HasValue && dto.ConsultationFee.Value < 0)
-            {
-                result.Exitoso = false;
-                result.Mensaje = "La tarifa de consulta no puede ser negativa";
-                return false;
-            }
-
-            return true;
-        }
-
         private bool IsValidPhoneNumber(string phoneNumber)
         {
-            return Regex.IsMatch(phoneNumber, @"^\d{3}-\d{3}-\d{4}$"); //formato para recibir el numero en el formato correcto
+            return Regex.IsMatch(phoneNumber, @"^\d{3}-\d{3}-\d{4}$");
         }
 
-        // mappers
         private static DoctorDto MapToDto(Doctor d) => new()
         {
             DoctorId = d.DoctorId,

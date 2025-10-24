@@ -35,8 +35,6 @@ namespace SGMCJ.Persistence.Ado.Appointments
                         AppointmentDate = r.GetDateTime("AppointmentDate"),
                         StatusId = r.GetInt32("StatusID"),
                         StatusName = r.GetString("StatusName"),
-                     //   Reason = r.IsDBNull("Reason") ? null : r.GetString("Reason"),
-                    //    Notes = r.IsDBNull("Notes") ? null : r.GetString("Notes"),
                         CreatedAt = r.GetDateTime("CreatedAt")
                     });
                 }
@@ -71,8 +69,6 @@ namespace SGMCJ.Persistence.Ado.Appointments
                         AppointmentDate = r.GetDateTime("AppointmentDate"),
                         StatusId = r.GetInt32("StatusID"),
                         StatusName = r.GetString("StatusName"),
-                      //  Reason = r.IsDBNull("Reason") ? null : r.GetString("Reason"),
-                        //Notes = r.IsDBNull("Notes") ? null : r.GetString("Notes"),
                         CreatedAt = r.GetDateTime("CreatedAt")
                     });
                 }
@@ -92,7 +88,6 @@ namespace SGMCJ.Persistence.Ado.Appointments
                 var result = await _sp.ExecuteNonQueryAsync(
                     "appointments.usp_Appointment_Cancel",
                     ("@AppointmentID", appointmentId)
-                  //  ("@Reason", reason ?? string.Empty)
                 );
                 return result > 0;
             }
