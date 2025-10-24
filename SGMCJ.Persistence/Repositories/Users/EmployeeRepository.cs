@@ -10,7 +10,7 @@ namespace SGMCJ.Persistence.Repositories.Users
     {
         public EmployeeRepository(HealtSyncContext context) : base(context) { }
 
-        public new async Task<Employee?> GetByIdAsync(int employeeId)
+        public override async Task<Employee?> GetByIdAsync(int employeeId) 
             => await _dbSet.FindAsync(employeeId);
 
         public async Task<IEnumerable<Employee>> GetActiveEmployeesAsync()
@@ -22,7 +22,7 @@ namespace SGMCJ.Persistence.Repositories.Users
         public async Task<bool> ExistsAsync(int employeeId)
             => await _dbSet.AnyAsync(e => e.EmployeeId == employeeId);
 
-        public async Task DeleteAsync(int employeeId)
+        public override async Task DeleteAsync(int employeeId) 
         {
             var entity = await GetByIdAsync(employeeId);
             if (entity != null)

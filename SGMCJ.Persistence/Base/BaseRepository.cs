@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using SGMCJ.Domain.Entities.Users;
 using SGMCJ.Domain.Repositories;
 using SGMCJ.Persistence.Context;
 using System.Linq.Expressions;
@@ -25,7 +24,6 @@ namespace SGMCJ.Persistence.Base
         //Obtiene una entidad por su ID. Devuelve null si no se encuentra.
         public virtual async Task<T?> GetByIdAsync(int id)
         {
-        // FindAsync devuelve null automáticamente si no encuentra la entidad por su clave primaria.
             return await _dbSet.FindAsync(id);
         }
 
@@ -61,11 +59,6 @@ namespace SGMCJ.Persistence.Base
         public virtual async Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate)
         {
             return await _dbSet.AnyAsync(predicate);
-        }
-
-        public Task UpdateAsync(Patient patient)
-        {
-            throw new NotImplementedException();
         }
     }
 }

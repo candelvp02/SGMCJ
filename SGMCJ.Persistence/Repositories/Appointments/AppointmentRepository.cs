@@ -34,7 +34,7 @@ namespace SGMCJ.Persistence.Repositories.Appointments
         public async Task<bool> ExistsAsync(int appointmentId)
             => await _dbSet.AnyAsync(a => a.AppointmentId == appointmentId);
 
-        public async Task<Appointment?> GetByIdAsync(int appointmentId)
+        public override async Task<Appointment?> GetByIdAsync(int appointmentId)
             => await _dbSet.FindAsync(appointmentId);
 
         public async Task<Appointment?> GetByIdWithDetailsAsync(int appointmentId)

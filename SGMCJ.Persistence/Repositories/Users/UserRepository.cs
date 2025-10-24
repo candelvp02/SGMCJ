@@ -44,7 +44,7 @@ namespace SGMCJ.Persistence.Repositories.Users
         public async Task<bool> ExistsByEmailAsync(string email)
             => await _dbSet.AnyAsync(u => u.Email == email);
 
-        public async Task DeleteAsync(int userId)
+        public override async Task DeleteAsync(int userId)
         {
             var user = await _dbSet.FindAsync(userId);
             if (user != null)

@@ -10,7 +10,7 @@ namespace SGMCJ.Persistence.Repositories.Appointments
     {
         public DoctorAvailabilityRepository(HealtSyncContext context) : base(context) { }
 
-        public async Task<DoctorAvailability?> GetByIdAsync(int id)
+        public override async Task<DoctorAvailability?> GetByIdAsync(int id)
             => await _dbSet.FindAsync(id);
 
         public async Task<IEnumerable<DoctorAvailability>> GetByDoctorIdAsync(int doctorId)
@@ -53,7 +53,7 @@ namespace SGMCJ.Persistence.Repositories.Appointments
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteAsync(int availabilityId)
+        public override async Task DeleteAsync(int availabilityId)
         {
             var entity = await _dbSet.FindAsync(availabilityId);
             if (entity != null)

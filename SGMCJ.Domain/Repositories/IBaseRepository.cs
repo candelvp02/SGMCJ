@@ -12,6 +12,5 @@ namespace SGMCJ.Domain.Repositories
         Task DeleteAsync(int id); //eliminar una entidad por su id
         Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate); //buscar entidades que cumplan con condicion where
         Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate); //verificar si existe 
-        Task UpdateAsync(Patient patient);
     }
 }

@@ -46,8 +46,5 @@ namespace SGMCJ.Domain.Entities.Users
         public virtual ICollection<MedicalRecord> MedicalRecords { get; set; } = new List<MedicalRecord>();
 
         public virtual Specialty? Specialty { get; set; }
-        public int Id { get; set; }
-        public object? Name { get; set; }
-        public object? Email { get; set; }
     }
 }
