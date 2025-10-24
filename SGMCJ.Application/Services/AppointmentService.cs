@@ -1,64 +1,55 @@
 ﻿using Microsoft.Extensions.Logging;
 using SGMCJ.Application.Dto.Appointments;
+using SGMCJ.Application.Interfaces;
 using SGMCJ.Application.Interfaces.Service;
 using SGMCJ.Domain.Base;
 using SGMCJ.Domain.Entities.Appointments;
 using SGMCJ.Domain.Repositories.Appointments;
+using SGMCJ.Domain.Repositories.Users;
 
 namespace SGMCJ.Application.Services
 {
-    public class AppointmentService : IAppointmentService
+    public class AppointmentService(
+        IAppointmentRepository repository,
+        IPatientRepository patientRepository,
+        IDoctorRepository doctorRepository,
+        ILogger<AppointmentService> logger) : IAppointmentService
     {
-        private readonly IAppointmentRepository _repository;
-        private readonly ILogger<AppointmentService> _logger;
+        private readonly IAppointmentRepository _repository = repository;
+        private readonly ILogger<AppointmentService> _logger = logger;
+        private readonly IPatientRepository _patientRepository = patientRepository;
+        private readonly IDoctorRepository _doctorRepository = doctorRepository;
 
-        public AppointmentService(
-            IAppointmentRepository repository,
-            ILogger<AppointmentService> logger)
-
-        {
-            _repository = repository;
-            _logger = logger;
-        }
-
-        // crear cita
         public async Task<OperationResult<AppointmentDto>> CreateAsync(CreateAppointmentDto dto)
         {
             var result = new OperationResult<AppointmentDto>();
 
             try
             {
-                // validar datos basicos
                 if (!ValidateBasicData(dto, result))
                     return result;
 
-                // validar fecha y hr
                 if (!ValidateDateTime(dto.AppointmentDate, result))
                     return result;
 
-                // verificar que el paciente existe
                 if (!await PatientExists(dto.PatientId, result))
                     return result;
 
-                // verificar que el doctor existe
                 if (!await DoctorExists(dto.DoctorId, result))
                     return result;
 
-                // verificar disponibilidad del doctor
                 if (!await IsDoctorAvailable(dto.DoctorId, dto.AppointmentDate, result))
                     return result;
 
-                // verificar que el paciente no tenga otra cita en la misma fecha y hr
-                if (!await IsPatientAvailable(dto.DoctorId, dto.AppointmentDate, result))
+                if (!await IsPatientAvailable(dto.PatientId, dto.AppointmentDate, result))
                     return result;
 
-                // crear la cita
                 var appointment = new Appointment
                 {
                     PatientId = dto.PatientId,
                     DoctorId = dto.DoctorId,
                     AppointmentDate = dto.AppointmentDate,
-                    StatusId = 1, // pendiente
+                    StatusId = 1,
                     CreatedAt = DateTime.Now
                 };
 
@@ -76,22 +67,23 @@ namespace SGMCJ.Application.Services
             }
             return result;
         }
-        // eliminar cita
+
         public async Task<OperationResult> DeleteAsync(int id)
         {
             var result = new OperationResult();
 
             try
             {
-                var appointment = await _repository.GetByIdAsync(id);
-                if (appointment == null)
+                var appointmentExists = await _repository.ExistsAsync(id);
+                if (!appointmentExists)
                 {
                     result.Exitoso = false;
                     result.Mensaje = "Cita no encontrada";
                     return result;
                 }
 
-                await _repository.DeleteAsync(appointment);
+                await _repository.GetByIdAsync(id);
+
                 result.Exitoso = true;
                 result.Mensaje = "Cita eliminada correctamente";
             }
@@ -104,15 +96,14 @@ namespace SGMCJ.Application.Services
 
             return result;
         }
-        // cancelar cita
+
         public async Task<OperationResult> CancelAsync(int appointmentId)
         {
             var result = new OperationResult();
 
             try
             {
-                // buscar cita
-                var appointment = await _repository.GetByIdAsync(appointmentId);
+                var appointment = await _repository.GetByIdWithDetailsAsync(appointmentId);
                 if (appointment == null)
                 {
                     result.Exitoso = false;
@@ -120,15 +111,13 @@ namespace SGMCJ.Application.Services
                     return result;
                 }
 
-                // verificar que la cita no este cancelada
-                if (appointment.StatusId == 3) //cancelada
+                if (appointment.StatusId == 3)
                 {
                     result.Exitoso = false;
                     result.Mensaje = "Cita ya está cancelada";
                     return result;
                 }
 
-                // verificar tiempo minimo 24hr
                 var hoursUntil = (appointment.AppointmentDate - DateTime.Now).TotalHours;
                 if (hoursUntil < 24)
                 {
@@ -137,8 +126,7 @@ namespace SGMCJ.Application.Services
                     return result;
                 }
 
-                // cancelar
-                appointment.StatusId = 3; // cancelada
+                appointment.StatusId = 3;
                 appointment.UpdatedAt = DateTime.Now;
                 await _repository.UpdateAsync(appointment);
 
@@ -154,14 +142,13 @@ namespace SGMCJ.Application.Services
             return result;
         }
 
-        // confirmar cita
         public async Task<OperationResult> ConfirmAsync(int appointmentId)
         {
             var result = new OperationResult();
 
             try
             {
-                var appointment = await _repository.GetByIdAsync(appointmentId);
+                var appointment = await _repository.GetByIdWithDetailsAsync(appointmentId);
 
                 if (appointment == null)
                 {
@@ -170,14 +157,14 @@ namespace SGMCJ.Application.Services
                     return result;
                 }
 
-                if (appointment.StatusId != 1) // pendiente
+                if (appointment.StatusId != 1)
                 {
                     result.Exitoso = false;
                     result.Mensaje = "Solo se pueden confirmar citas pendientes";
                     return result;
                 }
 
-                appointment.StatusId = 2; // confirmada
+                appointment.StatusId = 2;
                 appointment.UpdatedAt = DateTime.Now;
                 await _repository.UpdateAsync(appointment);
 
@@ -193,15 +180,13 @@ namespace SGMCJ.Application.Services
             return result;
         }
 
-        // reprogramar cita
         public async Task<OperationResult> RescheduleAsync(int appointmentId, DateTime newDate)
         {
             var result = new OperationResult();
 
             try
             {
-                // buscar cita
-                var appointment = await _repository.GetByIdAsync(appointmentId);
+                var appointment = await _repository.GetByIdWithDetailsAsync(appointmentId);
                 if (appointment == null)
                 {
                     result.Exitoso = false;
@@ -209,25 +194,21 @@ namespace SGMCJ.Application.Services
                     return result;
                 }
 
-                // verificar que no este cancelada
-                if (appointment.StatusId == 3) // cancelada
+                if (appointment.StatusId == 3)
                 {
                     result.Exitoso = false;
                     result.Mensaje = "No se puede reprogramar una cita cancelada";
                     return result;
                 }
 
-                // validar nueva fecha y hr
                 if (!ValidateDateTime(newDate, result))
                     return result;
 
-                // verificar disponibilidad del doctor
                 if (!await IsDoctorAvailable(appointment.DoctorId, newDate, result))
                     return result;
 
-                // reprogramar
                 appointment.AppointmentDate = newDate;
-                appointment.StatusId = 1; // vuelve a pendiente
+                appointment.StatusId = 1;
                 appointment.UpdatedAt = DateTime.Now;
                 await _repository.UpdateAsync(appointment);
 
@@ -244,7 +225,6 @@ namespace SGMCJ.Application.Services
             return result;
         }
 
-        // consultas
         public async Task<OperationResult<List<AppointmentDto>>> GetAllAsync()
         {
             var result = new OperationResult<List<AppointmentDto>>();
@@ -295,7 +275,7 @@ namespace SGMCJ.Application.Services
             var result = new OperationResult<AppointmentDto>();
             try
             {
-                var appointment = await _repository.GetByIdAsync(dto.AppointmentId);
+                var appointment = await _repository.GetByIdWithDetailsAsync(dto.AppointmentId);
                 if (appointment == null)
                 {
                     result.Exitoso = false;
@@ -384,13 +364,8 @@ namespace SGMCJ.Application.Services
             var result = new OperationResult<List<AppointmentDto>>();
             try
             {
-                var appointments = await _repository.GetByPatientIdAsync(patientId);
-                var upcoming = appointments
-                    .Where(a => a.AppointmentDate > DateTime.Now)
-                    .OrderBy(a => a.AppointmentDate)
-                    .ToList();
-
-                result.Datos = upcoming.Select(MapToDto).ToList();
+                var appointments = await _repository.GetUpcomingAppointmentsAsync(patientId);
+                result.Datos = appointments.Select(MapToDto).ToList();
                 result.Exitoso = true;
                 result.Mensaje = "Citas futuras obtenidas correctamente";
             }
@@ -403,9 +378,7 @@ namespace SGMCJ.Application.Services
             return result;
         }
 
-        // metodos privado de validacion
-
-        private bool ValidateBasicData(CreateAppointmentDto dto, OperationResult result)
+        private static bool ValidateBasicData(CreateAppointmentDto dto, OperationResult result)
         {
             if (dto == null || dto.PatientId <= 0 || dto.DoctorId <= 0)
             {
@@ -416,38 +389,36 @@ namespace SGMCJ.Application.Services
             return true;
         }
 
-        private bool ValidateDateTime(DateTime appointmentDate, OperationResult result)
+        private static bool ValidateDateTime(DateTime appointmentDate, OperationResult result)
         {
-            // debe ser al menos 10 min en el futuro
             if (appointmentDate <= DateTime.Now.AddMinutes(10))
             {
                 result.Exitoso = false;
                 result.Mensaje = "La cita debe ser al menos 10 min en el futuro";
                 return false;
             }
-                // solo de 8am a 8pm
-                var time = appointmentDate.TimeOfDay;
-                if (time < new TimeSpan(8, 0, 0) || time > new TimeSpan(20, 0, 0))
-                {
-                    result.Exitoso = false;
-                    result.Mensaje = "La cita debe ser entre las 8:00 AM y las 8:00 PM";
-                    return false;
-                }
 
-                // no domingos
-                if (appointmentDate.DayOfWeek == DayOfWeek.Sunday)
-                {
-                    result.Exitoso = false;
-                    result.Mensaje = "No se permiten citas los domingos";
-                    return false;
-                }
-                return true;
+            var time = appointmentDate.TimeOfDay;
+            if (time < new TimeSpan(8, 0, 0) || time > new TimeSpan(20, 0, 0))
+            {
+                result.Exitoso = false;
+                result.Mensaje = "La cita debe ser entre las 8:00 AM y las 8:00 PM";
+                return false;
+            }
+
+            if (appointmentDate.DayOfWeek == DayOfWeek.Sunday)
+            {
+                result.Exitoso = false;
+                result.Mensaje = "No se permiten citas los domingos";
+                return false;
+            }
+            return true;
         }
-  
+
         private async Task<bool> PatientExists(int patientId, OperationResult result)
         {
-            var appointments = await _repository.GetByPatientIdAsync(patientId);
-            if (appointments == null)
+            var patient = await _patientRepository.GetByIdAsync(patientId);
+            if (patient == null)
             {
                 result.Exitoso = false;
                 result.Mensaje = "Paciente no existe";
@@ -458,8 +429,8 @@ namespace SGMCJ.Application.Services
 
         private async Task<bool> DoctorExists(int doctorId, OperationResult result)
         {
-            var appointments = await _repository.GetByDoctorIdAsync(doctorId);
-            if (appointments == null)
+            var doctor = await _doctorRepository.GetByIdAsync(doctorId);
+            if (doctor == null)
             {
                 result.Exitoso = false;
                 result.Mensaje = "Doctor no existe";
@@ -476,7 +447,7 @@ namespace SGMCJ.Application.Services
                 result.Exitoso = false;
                 result.Mensaje = "El doctor no está disponible en la fecha y hora seleccionadas";
                 return false;
-            }   
+            }
             return true;
         }
 

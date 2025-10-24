@@ -6,6 +6,8 @@ namespace SGMCJ.Domain.Entities.Appointments
     [Table("DoctorAvailability", Schema = "appointments")]
     public partial class DoctorAvailability
     {
+        public readonly int Id;
+
         public int AvailabilityId { get; set; }
 
         public int DoctorId { get; set; }
@@ -17,5 +19,6 @@ namespace SGMCJ.Domain.Entities.Appointments
         public TimeOnly EndTime { get; set; }
 
         public virtual Doctor? Doctor { get; set; }
+        public bool IsActive { get; set; }
     }
 }

@@ -13,5 +13,7 @@ namespace SGMCJ.Domain.Repositories.Medical
         Task<Specialty?> GetNameAsync(string specialtyName);
         Task<bool> ExistsAsync(short specialtyId);
         Task<bool> ExistsByNameAsync(string specialtyName);
+        Task<IEnumerable<Specialty>> GetActiveAsync();
+        Task DeleteAsync(Specialty existing);
     }
 }

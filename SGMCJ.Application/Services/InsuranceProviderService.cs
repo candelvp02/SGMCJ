@@ -37,7 +37,6 @@ namespace SGMCJ.Application.Services
                 {
                     Name = dto.Name,
                     ContactPhone = dto.ContactPhone,
-                    Website = dto.Website,
                     IsActive = true,
                     CreatedAt = DateTime.Now
                 };
@@ -77,11 +76,36 @@ namespace SGMCJ.Application.Services
 
         private static InsuranceProviderDto MapToDto(InsuranceProvider p) => new()
         {
-            Id = p.Id,
+           // Id = p.Id,
             Name = p.Name,
-            ContactPhone = p.ContactPhone,
+            // ContactPhone = p.ContactPhone,
             Website = p.Website,
             IsActive = p.IsActive
         };
+
+        public Task<OperationResult<InsuranceProviderDto>> UpdateAsync(UpdateInsuranceProviderDto dto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<OperationResult> DeleteAsync(int id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<OperationResult<InsuranceProviderDto>> GetByIdAsync(int id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<OperationResult<List<InsuranceProviderDto>>> GetActiveAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<OperationResult<bool>> ExistsAsync(int id)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

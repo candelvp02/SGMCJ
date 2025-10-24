@@ -1,16 +1,4 @@
-﻿//using SGMCJ.Domain.Entities.Medical;
-
-//namespace SGMCJ.Domain.Repositories.Medical
-//{
-//    public interface IPacienteAdoRepository
-//    {
-//        Task<List<Paciente>> ListarActivosAsync();
-//        Task<List<Paciente>> BuscarPorNombreAsync(string nombre);
-//        Task<int> ObtenerTotalCitasAsync(int pacienteId);
-//    }
-//}
-
-using SGMCJ.Application.Dto.Users;
+﻿using SGMCJ.Application.Dto.Users;
 
 namespace SGMCJ.Domain.Repositories.Users
 {
@@ -19,5 +7,9 @@ namespace SGMCJ.Domain.Repositories.Users
         Task<List<PatientDto>> ListActiveAsync();
         Task<List<PatientDto>> SearchByNameAsync(string name);
         Task<int> GetTotalAppointmentsAsync(int patientId);
+        Task<PatientDto?> GetByIdWithDetailsAsync(int patientId);
+        Task<PatientDto?> GetByIdentificationNumberAsync(string identificationNumber);
+        Task<List<PatientDto>> ListByInsuranceProviderAsync(int insuranceProviderId);
+        Task<bool> UpdateInsuranceProviderAsync(int patientId, int insuranceProviderId);
     }
 }

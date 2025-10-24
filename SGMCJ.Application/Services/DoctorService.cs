@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using SGMCJ.Application.Dto.Users;
+using SGMCJ.Application.Interfaces;
 using SGMCJ.Application.Interfaces.Service;
 using SGMCJ.Domain.Base;
 using SGMCJ.Domain.Entities.Users;

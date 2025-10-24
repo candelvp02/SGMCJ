@@ -4,16 +4,14 @@ namespace SGMCJ.Domain.Repositories.Medical
 {
     public interface IMedicalRecordRepository
     {
-        Task<MedicalRecord?> GetByIdAsync(int recordId);
-        Task<IEnumerable<MedicalRecord>> GetAllAsync();
-        Task<MedicalRecord> AddAsync(MedicalRecord medicalRecord);
-        Task UpdateAsync(MedicalRecord medicalRecord);
-        Task DeleteAsync(int recordId);
+        // Operaciones CRUD
+        Task<MedicalRecord> AddAsync(MedicalRecord record);
+        Task<MedicalRecord> UpdateAsync(MedicalRecord record);
+        Task<MedicalRecord?> GetByIdAsync(int id);
+
+        // Consultas
         Task<IEnumerable<MedicalRecord>> GetByPatientIdAsync(int patientId);
         Task<IEnumerable<MedicalRecord>> GetByDoctorIdAsync(int doctorId);
-        Task<IEnumerable<MedicalRecord>> GetByDateRangeAsync(DateTime startDate, DateTime endDate);
-        Task<MedicalRecord?> GetLatestByPatientIdAsync(int patientId);
-        Task<MedicalRecord?> GetByIdWithDetailsAsync(int recordId);
-        Task<IEnumerable<MedicalRecord>> GetByPatientIdWithDetailsAsync(int patientId);
+        Task<MedicalRecord> GetByIdAsync(string? id);
     }
 }
